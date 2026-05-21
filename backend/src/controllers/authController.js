@@ -77,4 +77,39 @@ const getProfile = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getProfile };
+// ─── UPDATE PROFILE ──────────────────────────────────────
+const updateProfile = async (req, res) => {
+  const { nama, email, password } = req.body;
+  const userId = req.user.id;
+
+  if (!nama || !email) {
+    return res.status(400).json({ message: 'Nama dan email wajib diisi.' });
+  }
+
+  try {
+    // Check if email is already taken by another user
+    const [existing] = await db.query('SELECT id FROM users WHERE email = ? AND id != ?', [email, userId]);
+    if (existing.length > 0) {
+      return res.status(409).json({ message: 'Email sudah digunakan oleh akun lain.' });
+    }
+
+    if (password) {
+      const hashed = await bcrypt.hash(password, 10);
+      await db.query(
+        'UPDATE users SET nama = ?, email = ?, password = ? WHERE id = ?',
+        [nama, email, hashed, userId]
+      );
+    } else {
+      await db.query(
+        'UPDATE users SET nama = ?, email = ? WHERE id = ?',
+        [nama, email, userId]
+      );
+    }
+
+    res.json({ message: 'Profil berhasil diperbarui.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error.', error: err.message });
+  }
+};
+
+module.exports = { register, login, getProfile, updateProfile };
