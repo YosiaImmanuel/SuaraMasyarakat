@@ -118,11 +118,16 @@ const update = async (req, res) => {
 
 // ─── UPDATE STATUS (admin only) ───────────────────────────
 const updateStatus = async (req, res) => {
-  const { status } = req.body;
-  const allowed    = ['pending', 'approved', 'rejected'];
+  const { status, rejection_reason } = req.body; // ← tambah rejection_reason
+  const allowed = ['pending', 'approved', 'rejected'];
 
   if (!allowed.includes(status)) {
     return res.status(400).json({ message: `Status harus salah satu dari: ${allowed.join(', ')}` });
+  }
+
+  // Kalau rejected, wajib ada alasan
+  if (status === 'rejected' && !rejection_reason?.trim()) {
+    return res.status(400).json({ message: 'Alasan penolakan wajib diisi.' });
   }
 
   try {
@@ -131,7 +136,11 @@ const updateStatus = async (req, res) => {
       return res.status(404).json({ message: 'Laporan tidak ditemukan.' });
     }
 
-    await db.query('UPDATE laporan SET status = ? WHERE id = ?', [status, req.params.id]);
+    await db.query(
+      'UPDATE laporan SET status = ?, rejection_reason = ? WHERE id = ?',
+      [status, status === 'rejected' ? rejection_reason : null, req.params.id]
+    );
+
     res.json({ message: `Status laporan berhasil diubah menjadi "${status}".` });
   } catch (err) {
     res.status(500).json({ message: 'Server error.', error: err.message });
