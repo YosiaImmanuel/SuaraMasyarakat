@@ -59,7 +59,14 @@ const getById = async (req, res) => {
 // ─── CREATE LAPORAN ───────────────────────────────────────
 const create = async (req, res) => {
   const { category_id, judul, deskripsi, lokasi } = req.body;
-  const gambar = req.file ? req.file.filename : null;
+  // Support multiple files (req.files) or single file (req.file)
+  let gambar = null;
+  if (req.files && req.files.length > 0) {
+    const filenames = req.files.map(f => f.filename);
+    gambar = JSON.stringify(filenames);
+  } else if (req.file) {
+    gambar = JSON.stringify([req.file.filename]);
+  }
 
   if (!category_id || !judul || !deskripsi) {
     return res.status(400).json({ message: 'category_id, judul, dan deskripsi wajib diisi.' });
@@ -79,7 +86,13 @@ const create = async (req, res) => {
 // ─── UPDATE LAPORAN ───────────────────────────────────────
 const update = async (req, res) => {
   const { category_id, judul, deskripsi, lokasi } = req.body;
-  const gambar = req.file ? req.file.filename : undefined;
+  let gambar = undefined;
+  if (req.files && req.files.length > 0) {
+    const filenames = req.files.map(f => f.filename);
+    gambar = JSON.stringify(filenames);
+  } else if (req.file) {
+    gambar = JSON.stringify([req.file.filename]);
+  }
 
   try {
     const [existing] = await db.query('SELECT * FROM laporan WHERE id = ?', [req.params.id]);

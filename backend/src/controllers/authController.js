@@ -10,6 +10,14 @@ const register = async (req, res) => {
     return res.status(400).json({ message: 'Nama, email, dan password wajib diisi.' });
   }
 
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'Password minimal terdiri dari 6 karakter.' });
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    return res.status(400).json({ message: 'Password minimal harus mengandung satu huruf besar.' });
+  }
+
   try {
     const [existing] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
     if (existing.length > 0) {
@@ -79,7 +87,7 @@ const getProfile = async (req, res) => {
 
 // ─── UPDATE PROFILE ──────────────────────────────────────
 const updateProfile = async (req, res) => {
-  const { nama, email, password } = req.body;
+  const { nama, email, password, current_password } = req.body;
   const userId = req.user.id;
 
   if (!nama || !email) {
@@ -94,6 +102,27 @@ const updateProfile = async (req, res) => {
     }
 
     if (password) {
+      // Wajib ada current_password kalau mau ganti password
+      if (!current_password) {
+        return res.status(400).json({ message: 'Kata sandi saat ini wajib diisi untuk mengganti kata sandi.' });
+      }
+
+      // Ambil password lama dari DB
+      const [rows] = await db.query('SELECT password FROM users WHERE id = ?', [userId]);
+      const isMatch = await bcrypt.compare(current_password, rows[0].password);
+
+      if (!isMatch) {
+        return res.status(401).json({ message: 'Kata sandi saat ini tidak sesuai.' });
+      }
+
+      // Validasi password baru
+      if (password.length < 6) {
+        return res.status(400).json({ message: 'Kata sandi minimal harus terdiri dari 6 karakter.' });
+      }
+      if (!/[A-Z]/.test(password)) {
+        return res.status(400).json({ message: 'Kata sandi harus mengandung minimal satu huruf besar (A-Z).' });
+      }
+
       const hashed = await bcrypt.hash(password, 10);
       await db.query(
         'UPDATE users SET nama = ?, email = ?, password = ? WHERE id = ?',
