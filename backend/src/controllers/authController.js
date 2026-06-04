@@ -141,4 +141,40 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getProfile, updateProfile };
+// ─── DELETE ACCOUNT ──────────────────────────────────────
+const deleteAccount = async (req, res) => {
+  const userId = req.user.id;
+  const { password } = req.body;
+
+  if (!password) {
+    return res.status(400).json({ message: 'Kata sandi wajib diisi untuk menghapus akun.' });
+  }
+
+  try {
+    // Verifikasi password
+    const [rows] = await db.query('SELECT password FROM users WHERE id = ?', [userId]);
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'User tidak ditemukan.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, rows[0].password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Kata sandi tidak sesuai.' });
+    }
+
+    // Hapus semua comments dari user
+    await db.query('DELETE FROM comments WHERE user_id = ?', [userId]);
+
+    // Hapus semua laporan dari user
+    await db.query('DELETE FROM laporan WHERE user_id = ?', [userId]);
+
+    // Hapus user
+    await db.query('DELETE FROM users WHERE id = ?', [userId]);
+
+    res.json({ message: 'Akun berhasil dihapus.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error.', error: err.message });
+  }
+};
+
+module.exports = { register, login, getProfile, updateProfile, deleteAccount };

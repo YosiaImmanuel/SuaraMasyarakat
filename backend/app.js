@@ -7,11 +7,10 @@ const app = express();
 
 // ─── MIDDLEWARE GLOBAL ────────────────────────────────────
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Serve folder uploads sebagai static file
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Note: Uploads are now handled via Cloudinary
 
 // ─── ROUTES ───────────────────────────────────────────────
 app.use('/api/auth',       require('./src/routes/auth'));
@@ -25,9 +24,23 @@ app.get('/', (req, res) => {
   res.json({ message: '🟢 Backend Pengaduan Masyarakat berjalan.' });
 });
 
+
 // ─── 404 HANDLER ─────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ message: 'Endpoint tidak ditemukan.' });
+});
+
+// ─── GLOBAL ERROR HANDLER ─────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error('❌ Uncaught error:', {
+    message: err.message,
+    stack: err.stack,
+    code: err.code,
+  });
+  res.status(500).json({
+    message: 'Server error.',
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+  });
 });
 
 // ─── START SERVER ─────────────────────────────────────────

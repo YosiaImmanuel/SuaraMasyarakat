@@ -58,43 +58,58 @@ const getById = async (req, res) => {
 
 // ─── CREATE LAPORAN ───────────────────────────────────────
 const create = async (req, res) => {
-  const { category_id, judul, deskripsi, lokasi } = req.body;
-  // Support multiple files (req.files) or single file (req.file)
-  let gambar = null;
-  if (req.files && req.files.length > 0) {
-    const filenames = req.files.map(f => f.filename);
-    gambar = JSON.stringify(filenames);
-  } else if (req.file) {
-    gambar = JSON.stringify([req.file.filename]);
-  }
-
-  if (!category_id || !judul || !deskripsi) {
-    return res.status(400).json({ message: 'category_id, judul, dan deskripsi wajib diisi.' });
-  }
-
   try {
+    const { category_id, judul, deskripsi, lokasi } = req.body;
+    
+    if (!category_id || !judul || !deskripsi) {
+      return res.status(400).json({ message: 'category_id, judul, dan deskripsi wajib diisi.' });
+    }
+
+    // Support multiple files (req.files) or single file (req.file)
+    let gambar = null;
+    if (req.files && req.files.length > 0) {
+      console.log('📸 Files received:', req.files.length);
+      const urls = req.files.map(f => {
+        console.log('File:', f.filename || f.path, 'URL:', f.path);
+        return f.path;
+      });
+      gambar = JSON.stringify(urls);
+      console.log('✅ Gambar URLs:', gambar);
+    } else if (req.file) {
+      console.log('📸 Single file received:', req.file.filename || req.file.path);
+      gambar = JSON.stringify([req.file.path]);
+      console.log('✅ Gambar URL:', gambar);
+    } else {
+      console.log('ℹ️ No files uploaded');
+    }
+
     const [result] = await db.query(
       'INSERT INTO laporan (user_id, category_id, judul, deskripsi, lokasi, gambar) VALUES (?, ?, ?, ?, ?, ?)',
       [req.user.id, category_id, judul, deskripsi, lokasi, gambar]
     );
     res.status(201).json({ message: 'Laporan berhasil dibuat.', id: result.insertId });
   } catch (err) {
+    console.error('❌ Create laporan error:', err);
     res.status(500).json({ message: 'Server error.', error: err.message });
   }
 };
 
 // ─── UPDATE LAPORAN ───────────────────────────────────────
 const update = async (req, res) => {
-  const { category_id, judul, deskripsi, lokasi } = req.body;
-  let gambar = undefined;
-  if (req.files && req.files.length > 0) {
-    const filenames = req.files.map(f => f.filename);
-    gambar = JSON.stringify(filenames);
-  } else if (req.file) {
-    gambar = JSON.stringify([req.file.filename]);
-  }
-
   try {
+    const { category_id, judul, deskripsi, lokasi } = req.body;
+    let gambar = undefined;
+    if (req.files && req.files.length > 0) {
+      console.log('📸 Update: Files received:', req.files.length);
+      const urls = req.files.map(f => f.path);
+      gambar = JSON.stringify(urls);
+      console.log('✅ Update: Gambar URLs:', gambar);
+    } else if (req.file) {
+      console.log('📸 Update: Single file received');
+      gambar = JSON.stringify([req.file.path]);
+      console.log('✅ Update: Gambar URL:', gambar);
+    }
+
     const [existing] = await db.query('SELECT * FROM laporan WHERE id = ?', [req.params.id]);
     if (existing.length === 0) {
       return res.status(404).json({ message: 'Laporan tidak ditemukan.' });
@@ -125,6 +140,7 @@ const update = async (req, res) => {
 
     res.json({ message: 'Laporan berhasil diperbarui.' });
   } catch (err) {
+    console.error('❌ Update laporan error:', err);
     res.status(500).json({ message: 'Server error.', error: err.message });
   }
 };
