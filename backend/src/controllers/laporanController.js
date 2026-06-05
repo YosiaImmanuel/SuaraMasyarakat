@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const notificationController = require('./notificationController');
 
 // ─── GET ALL LAPORAN ──────────────────────────────────────
 const getAll = async (req, res) => {
@@ -160,14 +161,32 @@ const updateStatus = async (req, res) => {
   }
 
   try {
-    const [existing] = await db.query('SELECT id FROM laporan WHERE id = ?', [req.params.id]);
+    const [existing] = await db.query('SELECT id, user_id, judul FROM laporan WHERE id = ?', [req.params.id]);
     if (existing.length === 0) {
       return res.status(404).json({ message: 'Laporan tidak ditemukan.' });
     }
+    const laporan = existing[0];
 
     await db.query(
       'UPDATE laporan SET status = ?, rejection_reason = ? WHERE id = ?',
       [status, status === 'rejected' ? rejection_reason : null, req.params.id]
+    );
+
+    // Kirim notifikasi ke pembuat laporan
+    let statusLabel = status === 'approved' ? 'DISETUJUI' : status === 'rejected' ? 'DITOLAK' : 'PENDING';
+    let title = `Status Laporan Diperbarui`;
+    let message = `Laporan Anda "${laporan.judul}" telah diubah statusnya menjadi ${statusLabel}.`;
+    if (status === 'rejected' && rejection_reason) {
+      message += ` Alasan: ${rejection_reason}`;
+    }
+
+    await notificationController.createNotification(
+      laporan.user_id,
+      'status_change',
+      title,
+      message,
+      laporan.id,
+      req.io
     );
 
     res.json({ message: `Status laporan berhasil diubah menjadi "${status}".` });

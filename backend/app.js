@@ -20,15 +20,22 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Attach Socket.io to request object
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 // Note: Uploads are now handled via Cloudinary
 
 // ─── ROUTES ───────────────────────────────────────────────
-app.use('/api/auth',       require('./src/routes/auth'));
-app.use('/api/laporan',    require('./src/routes/laporan'));
-app.use('/api/comments',   require('./src/routes/comment'));
-app.use('/api/users',      require('./src/routes/user'));
-app.use('/api/categories', require('./src/routes/category'));
-app.use('/api/chat',       require('./src/routes/chat'));
+app.use('/api/auth',          require('./src/routes/auth'));
+app.use('/api/laporan',       require('./src/routes/laporan'));
+app.use('/api/comments',      require('./src/routes/comment'));
+app.use('/api/users',         require('./src/routes/user'));
+app.use('/api/categories',    require('./src/routes/category'));
+app.use('/api/chat',          require('./src/routes/chat'));
+app.use('/api/notifications', require('./src/routes/notification'));
 
 // ─── HEALTH CHECK ─────────────────────────────────────────
 app.get('/', (req, res) => {
@@ -37,6 +44,7 @@ app.get('/', (req, res) => {
 
 // ─── SOCKET.IO MIDDLEWARE & EVENTS ────────────────────────
 const chatController = require('./src/controllers/chatController');
+const notificationController = require('./src/controllers/notificationController');
 
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization?.split(' ')[1];
@@ -66,6 +74,16 @@ io.on('connection', (socket) => {
       io.to(receiverId.toString()).emit('receiveMessage', savedMessage);
       // Emit back to sender
       socket.emit('messageSent', savedMessage);
+
+      // Create notification for receiver
+      await notificationController.createNotification(
+        receiverId,
+        'chat',
+        `Pesan baru dari ${socket.user.nama || 'Pengguna'}`,
+        content.length > 60 ? `${content.substring(0, 60)}...` : content,
+        socket.user.id,
+        io
+      );
     } catch (err) {
       console.error('❌ Error handling sendMessage:', err.message);
     }
