@@ -1,22 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ActivityIndicator,
-} from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { apiFetch } from '@/src/lib/api';
 import { Message } from '@/src/types';
 import { ENDPOINTS } from '@/src/constants/api';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 import { useAuth } from '@/src/lib/auth-context';
-import { initializeSocket, getSocket, sendMessage, disconnectSocket } from '@/src/lib/socket';
+import { initializeSocket, getSocket } from '@/src/lib/socket';
 import EmptyState from '@/src/components/ui/EmptyState';
 
 export default function ChatDetailScreen() {
@@ -29,23 +19,23 @@ export default function ChatDetailScreen() {
   const [receiverName, setReceiverName] = useState('Percakapan');
   const flatListRef = useRef<FlatList>(null);
 
+  const receiverId = Number(userId);
+
   const fetchMessages = useCallback(async () => {
     try {
-      const data = await apiFetch<Message[]>(ENDPOINTS.CHAT.HISTORY(Number(userId)));
-      setMessages(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
+      const res = await apiFetch<{ success: boolean; data: Message[] }>(ENDPOINTS.CHAT.HISTORY(receiverId));
+      setMessages(Array.isArray(res.data) ? res.data : []);
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
+  }, [receiverId]);
 
   const fetchReceiverInfo = useCallback(async () => {
     try {
-      const data = await apiFetch<any>(ENDPOINTS.USERS.DETAIL(Number(userId)));
+      const data = await apiFetch<any>(ENDPOINTS.USERS.DETAIL(receiverId));
       if (data?.nama) setReceiverName(data.nama);
+      else if (data?.data?.nama) setReceiverName(data.data.nama);
     } catch {}
-  }, [userId]);
+  }, [receiverId]);
 
   useEffect(() => {
     fetchMessages();
@@ -53,52 +43,78 @@ export default function ChatDetailScreen() {
   }, [fetchMessages, fetchReceiverInfo]);
 
   useEffect(() => {
-    if (token) {
-      initializeSocket(token);
-    }
-    return () => {
-      disconnectSocket();
-    };
-  }, [token]);
+    if (!token) return;
+    const socket = initializeSocket(token);
 
-  useEffect(() => {
-    const socket = getSocket();
-    if (!socket) return;
+    socket.on('connect', () => {
+      console.log('Chat socket connected');
+    });
 
-    const handleReceiveMessage = (msg: Message) => {
-      if (msg.sender_id === Number(userId) || msg.receiver_id === Number(userId)) {
-        setMessages((prev) => {
-          const exists = prev.some((m) => m.id === msg.id);
-          if (exists) return prev;
-          return [...prev, msg];
-        });
-      }
-    };
-
-    const handleMessageSent = (msg: Message) => {
+    socket.on('receiveMessage', (msg: Message) => {
+      if (msg.sender_id !== receiverId) return;
       setMessages((prev) => {
-        const exists = prev.some((m) => m.id === msg.id);
-        if (exists) return prev;
+        if (prev.some((m) => m.id === msg.id)) return prev;
         return [...prev, msg];
       });
-    };
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+    });
 
-    socket.on('receiveMessage', handleReceiveMessage);
-    socket.on('messageSent', handleMessageSent);
+    socket.on('messageSent', (msg: Message) => {
+      setMessages((prev) => {
+        const tempIdx = prev.findIndex((m) => m.id < 0 && m.sender_id === msg.sender_id && m.content === msg.content);
+        if (tempIdx !== -1) {
+          const copy = [...prev];
+          copy[tempIdx] = msg;
+          return copy;
+        }
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        return [...prev, msg];
+      });
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+    });
+
+    socket.on('userTyping', ({ senderId }: { senderId: number }) => {
+      if (senderId === receiverId) {
+        // Could show typing indicator
+      }
+    });
+
+    socket.on('userStoppedTyping', ({ senderId }: { senderId: number }) => {
+      if (senderId === receiverId) {
+        // Could hide typing indicator
+      }
+    });
 
     return () => {
-      socket.off('receiveMessage', handleReceiveMessage);
-      socket.off('messageSent', handleMessageSent);
+      socket.off('receiveMessage');
+      socket.off('messageSent');
+      socket.off('userTyping');
+      socket.off('userStoppedTyping');
     };
-  }, [userId]);
+  }, [token, receiverId]);
 
   function handleSend() {
     if (!content.trim() || sending) return;
     setSending(true);
-    sendMessage(Number(userId), content.trim());
+    const text = content.trim();
+    const socket = getSocket();
+
+    // Optimistic update with negative id so messageSent can replace it
+    const tempMsg: Message = {
+      id: -Date.now(),
+      sender_id: user?.id || 0,
+      receiver_id: receiverId,
+      content: text,
+      created_at: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, tempMsg]);
     setContent('');
     setSending(false);
     setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 200);
+
+    if (socket?.connected) {
+      socket.emit('sendMessage', { receiverId, content: text });
+    }
   }
 
   function formatTime(dateStr: string) {
@@ -109,17 +125,10 @@ export default function ChatDetailScreen() {
   function groupMessages(msgs: Message[]) {
     const groups: { date: string; messages: Message[] }[] = [];
     msgs.forEach((msg) => {
-      const date = new Date(msg.created_at).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      });
-      const lastGroup = groups[groups.length - 1];
-      if (lastGroup && lastGroup.date === date) {
-        lastGroup.messages.push(msg);
-      } else {
-        groups.push({ date, messages: [msg] });
-      }
+      const date = new Date(msg.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      const last = groups[groups.length - 1];
+      if (last && last.date === date) { last.messages.push(msg); }
+      else { groups.push({ date, messages: [msg] }); }
     });
     return groups;
   }
@@ -127,66 +136,43 @@ export default function ChatDetailScreen() {
   function renderMessage({ item }: { item: Message }) {
     const isMine = item.sender_id === user?.id;
     return (
-      <View style={[styles.messageRow, isMine ? styles.messageRowMine : styles.messageRowOther]}>
-        <View
-          style={[
-            styles.messageBubble,
-            isMine ? styles.messageBubbleMine : styles.messageBubbleOther,
-          ]}
-        >
-          <Text style={[styles.messageText, isMine && styles.messageTextMine]}>
-            {item.content}
-          </Text>
-          <Text style={[styles.messageTime, isMine && styles.messageTimeMine]}>
-            {formatTime(item.created_at)}
-          </Text>
+      <View style={[styles.msgRow, isMine ? styles.msgRowMine : styles.msgRowOther]}>
+        <View style={[styles.bubble, isMine ? styles.bubbleMine : styles.bubbleOther]}>
+          <Text style={[styles.msgText, isMine && styles.msgTextMine]}>{item.content}</Text>
+          <Text style={[styles.msgTime, isMine && styles.msgTimeMine]}>{formatTime(item.created_at)}</Text>
         </View>
-      </View>
-    );
-  }
-
-  function renderDateGroup({ item }: { item: { date: string; messages: Message[] } }) {
-    return (
-      <View>
-        <View style={styles.dateSeparator}>
-          <Text style={styles.dateText}>{item.date}</Text>
-        </View>
-        {item.messages.map((msg) => (
-          <View key={msg.id}>{renderMessage({ item: msg })}</View>
-        ))}
       </View>
     );
   }
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.light.primary} />
-      </View>
-    );
+    return <View style={styles.loading}><ActivityIndicator size="large" color={Colors.light.primary} /></View>;
   }
 
   const groupedMessages = groupMessages(messages);
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
       {groupedMessages.length === 0 ? (
-        <EmptyState title="Belum ada pesan" message="Kirim pesan pertama Anda" />
+        <View style={styles.emptyContainer}>
+          <EmptyState title="Belum ada pesan" message={`Mulai percakapan dengan ${receiverName || 'pengguna'}`} />
+        </View>
       ) : (
         <FlatList
           ref={flatListRef}
           data={groupedMessages}
-          renderItem={renderDateGroup}
+          renderItem={({ item }) => (
+            <View>
+              <View style={styles.dateSep}><Text style={styles.dateText}>{item.date}</Text></View>
+              {item.messages.map((msg: Message) => <View key={msg.id}>{renderMessage({ item: msg })}</View>)}
+            </View>
+          )}
           keyExtractor={(item) => item.date}
-          contentContainerStyle={styles.messageList}
+          contentContainerStyle={styles.msgList}
           onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
         />
       )}
-
       <View style={styles.inputBar}>
         <TextInput
           style={styles.textInput}
@@ -197,11 +183,7 @@ export default function ChatDetailScreen() {
           multiline
           maxLength={1000}
         />
-        <TouchableOpacity
-          style={[styles.sendBtn, (!content.trim() || sending) && styles.sendBtnDisabled]}
-          onPress={handleSend}
-          disabled={!content.trim() || sending}
-        >
+        <TouchableOpacity style={[styles.sendBtn, (!content.trim() || sending) && styles.sendBtnDisabled]} onPress={handleSend} disabled={!content.trim() || sending}>
           <Text style={styles.sendBtnText}>Kirim</Text>
         </TouchableOpacity>
       </View>
@@ -211,64 +193,24 @@ export default function ChatDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.light.background },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  messageList: { padding: Spacing.lg, paddingBottom: Spacing.md },
-  dateSeparator: { alignItems: 'center', marginVertical: Spacing.md },
-  dateText: {
-    fontSize: 12,
-    color: Colors.light.textMuted,
-    backgroundColor: Colors.light.background,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
-    overflow: 'hidden',
-  },
-  messageRow: { marginBottom: Spacing.sm, flexDirection: 'row' },
-  messageRowMine: { justifyContent: 'flex-end' },
-  messageRowOther: { justifyContent: 'flex-start' },
-  messageBubble: {
-    maxWidth: '78%',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.lg,
-  },
-  messageBubbleMine: {
-    backgroundColor: Colors.light.chatSent,
-    borderBottomRightRadius: 4,
-  },
-  messageBubbleOther: {
-    backgroundColor: Colors.light.chatReceived,
-    borderBottomLeftRadius: 4,
-  },
-  messageText: { fontSize: 15, color: Colors.light.text, lineHeight: 20 },
-  messageTextMine: { color: '#fff' },
-  messageTime: { fontSize: 11, color: Colors.light.textMuted, marginTop: 4, alignSelf: 'flex-end' },
-  messageTimeMine: { color: 'rgba(255,255,255,0.7)' },
-  inputBar: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    padding: Spacing.md,
-    backgroundColor: Colors.light.surface,
-    borderTopWidth: 1,
-    borderTopColor: Colors.light.border,
-    gap: Spacing.sm,
-  },
-  textInput: {
-    flex: 1,
-    backgroundColor: Colors.light.background,
-    borderRadius: BorderRadius.md,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: 10,
-    fontSize: 15,
-    color: Colors.light.text,
-    maxHeight: 80,
-  },
-  sendBtn: {
-    backgroundColor: Colors.light.primary,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: 12,
-    borderRadius: BorderRadius.md,
-  },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  emptyContainer: { flex: 1, justifyContent: 'center' },
+  msgList: { padding: Spacing.lg, paddingBottom: Spacing.md },
+  dateSep: { alignItems: 'center', marginVertical: Spacing.md },
+  dateText: { fontSize: 12, color: Colors.light.textMuted, backgroundColor: Colors.light.background, paddingHorizontal: Spacing.md, paddingVertical: 4, borderRadius: BorderRadius.full, overflow: 'hidden' },
+  msgRow: { marginBottom: Spacing.sm, flexDirection: 'row' },
+  msgRowMine: { justifyContent: 'flex-end' },
+  msgRowOther: { justifyContent: 'flex-start' },
+  bubble: { maxWidth: '78%', paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm, borderRadius: BorderRadius.lg },
+  bubbleMine: { backgroundColor: Colors.light.chatSent, borderBottomRightRadius: 4 },
+  bubbleOther: { backgroundColor: Colors.light.chatReceived, borderBottomLeftRadius: 4 },
+  msgText: { fontSize: 15, color: Colors.light.text, lineHeight: 20 },
+  msgTextMine: { color: '#fff' },
+  msgTime: { fontSize: 11, color: Colors.light.textMuted, marginTop: 4, alignSelf: 'flex-end' },
+  msgTimeMine: { color: 'rgba(255,255,255,0.7)' },
+  inputBar: { flexDirection: 'row', alignItems: 'flex-end', padding: Spacing.md, backgroundColor: Colors.light.surface, borderTopWidth: 1, borderTopColor: Colors.light.border, gap: Spacing.sm },
+  textInput: { flex: 1, backgroundColor: Colors.light.background, borderRadius: BorderRadius.md, paddingHorizontal: Spacing.lg, paddingVertical: 10, fontSize: 15, color: Colors.light.text, maxHeight: 80 },
+  sendBtn: { backgroundColor: Colors.light.primary, paddingHorizontal: Spacing.xl, paddingVertical: 12, borderRadius: BorderRadius.md },
   sendBtnDisabled: { opacity: 0.5 },
   sendBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 });

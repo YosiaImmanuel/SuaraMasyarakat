@@ -4,6 +4,7 @@ import { User, AuthResponse } from '@/src/types';
 import { apiFetch } from './api';
 import { storage } from './storage';
 import { ENDPOINTS } from '@/src/constants/api';
+import { disconnectSocket } from '@/src/lib/socket';
 
 interface AuthContextType {
   user: User | null;
@@ -86,6 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    disconnectSocket();
     await storage.clear();
     setToken(null);
     setUser(null);

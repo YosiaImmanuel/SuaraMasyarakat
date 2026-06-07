@@ -2,12 +2,20 @@ import { io, Socket } from 'socket.io-client';
 import { API_BASE_URL } from '@/src/constants/api';
 
 let socket: Socket | null = null;
+let currentToken: string | null = null;
 
 export function initializeSocket(token: string): Socket {
-  if (socket?.connected) {
+  if (socket?.connected && currentToken === token) {
     return socket;
   }
 
+  if (socket) {
+    socket.removeAllListeners();
+    socket.disconnect();
+    socket = null;
+  }
+
+  currentToken = token;
   socket = io(API_BASE_URL, {
     auth: { token },
     transports: ['websocket', 'polling'],
@@ -34,9 +42,11 @@ export function getSocket(): Socket | null {
 
 export function disconnectSocket(): void {
   if (socket) {
+    socket.removeAllListeners();
     socket.disconnect();
     socket = null;
   }
+  currentToken = null;
 }
 
 export function sendMessage(receiverId: number, content: string): void {
