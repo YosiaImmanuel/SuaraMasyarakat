@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -51,9 +52,11 @@ export default function LaporanListScreen() {
     }
   }, [statusFilter, search]);
 
-  useEffect(() => {
-    fetchLaporan();
-  }, [fetchLaporan]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchLaporan();
+    }, [fetchLaporan])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);

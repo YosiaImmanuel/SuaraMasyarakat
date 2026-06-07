@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -38,9 +39,11 @@ export default function ChatListScreen() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchConversations();
-  }, [fetchConversations]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchConversations();
+    }, [fetchConversations])
+  );
 
   useEffect(() => {
     if (search.trim().length < 2) {

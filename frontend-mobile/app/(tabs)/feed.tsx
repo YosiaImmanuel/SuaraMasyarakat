@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -39,9 +40,11 @@ export default function FeedScreen() {
     }
   }, [selectedCategory, search]);
 
-  useEffect(() => {
-    fetchLaporan();
-  }, [fetchLaporan]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchLaporan();
+    }, [fetchLaporan])
+  );
 
   useEffect(() => {
     apiFetch<Category[]>(ENDPOINTS.CATEGORIES.LIST).then((data) => {
