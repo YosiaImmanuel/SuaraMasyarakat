@@ -32,7 +32,7 @@ function useProtectedRoute(user: User | null, isLoading: boolean) {
       router.replace('/(auth)/login');
     } else if (user && inAuthGroup) {
       const dashboard = getRoleDashboard(user.role);
-      router.replace(dashboard);
+      router.replace(dashboard as any);
     }
   }, [user, isLoading, segments, navigationState?.key]);
 }

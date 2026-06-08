@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Dimensions } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { apiFetch } from '@/src/lib/api';
 import { Message } from '@/src/types';
 import { ENDPOINTS } from '@/src/constants/api';
@@ -50,9 +50,9 @@ export default function ChatDetailScreen() {
     const socket = initializeSocket(token);
 
     socket.on('receiveMessage', (msg: Message) => {
-      if (msg.sender_id !== receiverId) return;
+      if (Number(msg.sender_id) !== Number(receiverId)) return;
       setMessages((prev) => {
-        if (prev.some((m) => m.id === msg.id)) return prev;
+        if (prev.some((m) => Number(m.id) === Number(msg.id))) return prev;
         return [...prev, msg];
       });
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
@@ -60,13 +60,13 @@ export default function ChatDetailScreen() {
 
     socket.on('messageSent', (msg: Message) => {
       setMessages((prev) => {
-        const tempIdx = prev.findIndex((m) => m.id < 0 && m.sender_id === msg.sender_id && m.content === msg.content);
+        const tempIdx = prev.findIndex((m) => m.id < 0 && Number(m.sender_id) === Number(msg.sender_id) && m.content === msg.content);
         if (tempIdx !== -1) {
           const copy = [...prev];
           copy[tempIdx] = msg;
           return copy;
         }
-        if (prev.some((m) => m.id === msg.id)) return prev;
+        if (prev.some((m) => Number(m.id) === Number(msg.id))) return prev;
         return [...prev, msg];
       });
       setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
@@ -112,6 +112,7 @@ export default function ChatDetailScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
+      <Stack.Screen options={{ title: receiverName }} />
       {messages.length === 0 ? (
         <View style={styles.emptyContainer}>
           <EmptyState title="Belum ada pesan" message={`Mulai percakapan dengan ${receiverName || 'pengguna'}`} />
@@ -120,7 +121,7 @@ export default function ChatDetailScreen() {
         <FlatList
           ref={flatListRef}
           data={messages}
-          renderItem={({ item }) => <MessageBubble item={item} isMine={item.sender_id === user?.id} />}
+          renderItem={({ item }) => <MessageBubble item={item} isMine={Number(item.sender_id) === Number(user?.id)} />}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.msgList}
           onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
@@ -149,7 +150,7 @@ function MessageBubble({ item, isMine }: { item: Message; isMine: boolean }) {
   return (
     <View style={[styles.msgRow, isMine ? styles.msgRowMine : styles.msgRowOther]}>
       <View style={isMine ? styles.bubbleMine : styles.bubbleOther}>
-        <Text style={[styles.msgText, isMine && styles.msgTextMine]}>{item.content}</Text>
+        <Text style={[styles.msgText, isMine ? styles.msgTextMine : styles.msgTextOther]}>{item.content}</Text>
       </View>
     </View>
   );
@@ -185,6 +186,7 @@ const styles = StyleSheet.create({
   },
   msgText: { fontSize: 15, color: Colors.light.text, lineHeight: 20 },
   msgTextMine: { color: '#fff' },
+  msgTextOther: { color: Colors.light.text },
   inputBar: { flexDirection: 'row', alignItems: 'flex-end', padding: Spacing.md, backgroundColor: Colors.light.surface, borderTopWidth: 1, borderTopColor: Colors.light.border, gap: Spacing.sm },
   textInput: { flex: 1, backgroundColor: Colors.light.background, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10, fontSize: 15, color: Colors.light.text, maxHeight: 80 },
   sendBtn: { backgroundColor: Colors.light.primary, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12 },

@@ -83,8 +83,8 @@ export default function AdminChatListScreen() {
           </View>
           <View style={styles.lastMsgRow}>
             <Text style={styles.lastMsg} numberOfLines={1}>{item.last_message}</Text>
-            <View style={[styles.roleBadge, { backgroundColor: roleColors[item.role] + '20' }]}>
-              <Text style={[styles.roleText, { color: roleColors[item.role] }]}>{roleLabels[item.role] || item.role}</Text>
+            <View style={[styles.roleBadge, { backgroundColor: (roleColors[item.role] || Colors.light.primary) + '20' }]}>
+              <Text style={[styles.roleText, { color: roleColors[item.role] || Colors.light.primary }]}>{roleLabels[item.role] || item.role}</Text>
             </View>
           </View>
         </View>
@@ -95,15 +95,15 @@ export default function AdminChatListScreen() {
   function renderUser({ item }: { item: User }) {
     return (
       <TouchableOpacity style={styles.userItem} onPress={() => startChat(item.id)} activeOpacity={0.7}>
-        <View style={[styles.avatar, { backgroundColor: roleColors[item.role] }]}>
+        <View style={[styles.avatar, { backgroundColor: roleColors[item.role] || Colors.light.primary }]}>
           <Text style={styles.avatarText}>{item.nama.charAt(0).toUpperCase()}</Text>
         </View>
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{item.nama}</Text>
           <Text style={styles.userEmail}>{item.email}</Text>
         </View>
-        <View style={[styles.roleBadge, { backgroundColor: roleColors[item.role] + '20' }]}>
-          <Text style={[styles.roleText, { color: roleColors[item.role] }]}>{roleLabels[item.role] || item.role}</Text>
+        <View style={[styles.roleBadge, { backgroundColor: (roleColors[item.role] || Colors.light.primary) + '20' }]}>
+          <Text style={[styles.roleText, { color: roleColors[item.role] || Colors.light.primary }]}>{roleLabels[item.role] || item.role}</Text>
         </View>
       </TouchableOpacity>
     );

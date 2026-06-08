@@ -119,7 +119,7 @@ export default function LoginScreen() {
         body: JSON.stringify({ email: email.trim(), password }),
       });
       await login(res.token, res.user);
-      router.replace(getRoleDashboard(res.user.role));
+      router.replace(getRoleDashboard(res.user.role) as any);
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan');
     } finally {
