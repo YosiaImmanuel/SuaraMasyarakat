@@ -188,7 +188,7 @@ export default function BuatLaporanScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Gambar (opsional, maks. 10)</Text>
+            <Text style={styles.label}>Gambar Bukti * (min. 1, maks. 10)</Text>
             <TouchableOpacity style={styles.imagePicker} onPress={pickImages} disabled={submitting}>
               <Text style={styles.imagePickerText}>+ Tambah Gambar</Text>
             </TouchableOpacity>
