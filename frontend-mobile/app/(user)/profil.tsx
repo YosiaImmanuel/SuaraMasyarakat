@@ -191,68 +191,12 @@ export default function ProfilScreen() {
     }
   };
 
-  const inputCls = {
-    backgroundColor: Colors.light.background,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-    borderRadius: BorderRadius.md,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: 14,
-    fontSize: 15,
-    color: Colors.light.text,
-  };
-
-  function Field({ label, children }: { label: string; children: React.ReactNode }) {
-    return (
-      <View style={fStyles.fieldGroup}>
-        <Text style={fStyles.fieldLabel}>{label}</Text>
-        {children}
-      </View>
-    );
-  }
-
-  function PasswordInput({
-    placeholder,
-    value,
-    onChange,
-    show,
-    onToggle,
-    danger = false,
-  }: {
-    placeholder: string;
-    value: string;
-    onChange: (v: string) => void;
-    show: boolean;
-    onToggle: () => void;
-    danger?: boolean;
-  }) {
-    return (
-      <View style={pwStyles.wrapper}>
-        <TextInput
-          style={[
-            inputCls,
-            pwStyles.input,
-            danger && { borderColor: Colors.light.destructive, backgroundColor: '#fef2f2' },
-          ]}
-          placeholder={placeholder}
-          placeholderTextColor={Colors.light.textMuted}
-          value={value}
-          onChangeText={onChange}
-          secureTextEntry={!show}
-        />
-        <TouchableOpacity style={pwStyles.toggle} onPress={onToggle} activeOpacity={0.7}>
-          <Text style={pwStyles.toggleText}>{show ? '🙈' : '👁️'}</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   const roleLabel = user?.role === 'user' ? 'Masyarakat' : user?.role === 'admin' ? 'Admin' : 'Super Admin';
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
         contentContainerStyle={styles.content}
@@ -397,24 +341,34 @@ export default function ProfilScreen() {
                   </View>
                 ) : (
                   <View style={styles.editForm}>
-                    <Field label="Nama Lengkap">
-                      <TextInput
-                        style={inputCls}
-                        value={nama}
-                        onChangeText={setNama}
-                        editable={!saving}
-                      />
-                    </Field>
-                    <Field label="Alamat Email">
-                      <TextInput
-                        style={inputCls}
-                        value={email}
-                        onChangeText={setEmail}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                        editable={!saving}
-                      />
-                    </Field>
+                    <View style={styles.fieldGroup}>
+                      <Text style={styles.fieldLabel}>NAMA LENGKAP</Text>
+                      <View style={styles.inputRow}>
+                        <TextInput
+                          style={styles.input}
+                          value={nama}
+                          onChangeText={setNama}
+                          editable={!saving}
+                          placeholder="Masukkan nama lengkap"
+                          placeholderTextColor={Colors.light.textMuted}
+                        />
+                      </View>
+                    </View>
+                    <View style={styles.fieldGroup}>
+                      <Text style={styles.fieldLabel}>ALAMAT EMAIL</Text>
+                      <View style={styles.inputRow}>
+                        <TextInput
+                          style={styles.input}
+                          value={email}
+                          onChangeText={setEmail}
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                          editable={!saving}
+                          placeholder="nama@contoh.com"
+                          placeholderTextColor={Colors.light.textMuted}
+                        />
+                      </View>
+                    </View>
                     <View style={styles.formActions}>
                       <TouchableOpacity
                         style={styles.cancelBtn}
@@ -453,35 +407,68 @@ export default function ProfilScreen() {
                   </View>
                 </View>
 
-                <Field label="Kata Sandi Saat Ini">
-                  <PasswordInput
-                    placeholder="Masukkan kata sandi saat ini"
-                    value={currentPassword}
-                    onChange={setCurrentPassword}
-                    show={showCurrent}
-                    onToggle={() => setShowCurrent((s) => !s)}
-                  />
-                </Field>
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>KATA SANDI SAAT INI</Text>
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      style={[styles.input, { flex: 1 }]}
+                      placeholder="Masukkan kata sandi saat ini"
+                      placeholderTextColor={Colors.light.textMuted}
+                      value={currentPassword}
+                      onChangeText={setCurrentPassword}
+                      secureTextEntry={!showCurrent}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={() => setShowCurrent((s) => !s)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Text style={styles.eyeText}>{showCurrent ? '🙈' : '👁️'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
 
-                <Field label="Kata Sandi Baru">
-                  <PasswordInput
-                    placeholder="Minimal 6 karakter"
-                    value={newPassword}
-                    onChange={setNewPassword}
-                    show={showNew}
-                    onToggle={() => setShowNew((s) => !s)}
-                  />
-                </Field>
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>KATA SANDI BARU</Text>
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      style={[styles.input, { flex: 1 }]}
+                      placeholder="Minimal 6 karakter"
+                      placeholderTextColor={Colors.light.textMuted}
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                      secureTextEntry={!showNew}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={() => setShowNew((s) => !s)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Text style={styles.eyeText}>{showNew ? '🙈' : '👁️'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
 
-                <Field label="Konfirmasi Kata Sandi">
-                  <PasswordInput
-                    placeholder="Ulangi kata sandi baru"
-                    value={confirmPassword}
-                    onChange={setConfirmPassword}
-                    show={showConfirm}
-                    onToggle={() => setShowConfirm((s) => !s)}
-                  />
-                </Field>
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>KONFIRMASI KATA SANDI</Text>
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      style={[styles.input, { flex: 1 }]}
+                      placeholder="Ulangi kata sandi baru"
+                      placeholderTextColor={Colors.light.textMuted}
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      secureTextEntry={!showConfirm}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={() => setShowConfirm((s) => !s)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Text style={styles.eyeText}>{showConfirm ? '🙈' : '👁️'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
 
                 {/* Validation Hints */}
                 <View style={styles.hintsRow}>
@@ -576,16 +563,26 @@ export default function ProfilScreen() {
 
                       {deleteStep === 2 && (
                         <View style={styles.deleteStep2}>
-                          <Field label="Masukkan Kata Sandi untuk Konfirmasi">
-                            <PasswordInput
-                              placeholder="Kata sandi Anda"
-                              value={deletePassword}
-                              onChange={setDeletePassword}
-                              show={showDeletePw}
-                              onToggle={() => setShowDeletePw((s) => !s)}
-                              danger
-                            />
-                          </Field>
+                          <View style={styles.fieldGroup}>
+                            <Text style={styles.fieldLabel}>MASUKKAN KATA SANDI UNTUK KONFIRMASI</Text>
+                            <View style={[styles.inputRow, styles.inputRowDanger]}>
+                              <TextInput
+                                style={[styles.input, { flex: 1 }]}
+                                placeholder="Kata sandi Anda"
+                                placeholderTextColor={Colors.light.textMuted}
+                                value={deletePassword}
+                                onChangeText={setDeletePassword}
+                                secureTextEntry={!showDeletePw}
+                              />
+                              <TouchableOpacity
+                                style={styles.eyeButton}
+                                onPress={() => setShowDeletePw((s) => !s)}
+                                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                              >
+                                <Text style={styles.eyeText}>{showDeletePw ? '🙈' : '👁️'}</Text>
+                              </TouchableOpacity>
+                            </View>
+                          </View>
                           <View style={styles.deleteActions}>
                             <TouchableOpacity
                               style={styles.deleteCancelBtn}
@@ -952,6 +949,43 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 
+  // Inline Input Fields (login-like)
+  fieldGroup: { gap: 6 },
+  fieldLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.light.textSecondary,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.light.background,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    borderRadius: BorderRadius.md,
+    height: 44,
+  },
+  inputRowDanger: {
+    borderColor: Colors.light.destructive,
+    backgroundColor: '#fef2f2',
+  },
+  input: {
+    flex: 1,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: Colors.light.text,
+    height: '100%',
+  },
+  eyeButton: {
+    paddingHorizontal: 12,
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  eyeText: { fontSize: 17 },
+
   // Password fields
   hintsRow: {
     flexDirection: 'row',
@@ -1107,24 +1141,4 @@ const styles = StyleSheet.create({
   },
 });
 
-const fStyles = StyleSheet.create({
-  fieldGroup: { gap: Spacing.sm },
-  fieldLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.light.textSecondary,
-  },
-});
 
-const pwStyles = StyleSheet.create({
-  wrapper: { position: 'relative' },
-  input: { paddingRight: 50 },
-  toggle: {
-    position: 'absolute',
-    right: 14,
-    top: 0,
-    bottom: 0,
-    justifyContent: 'center',
-  },
-  toggleText: { fontSize: 18 },
-});
