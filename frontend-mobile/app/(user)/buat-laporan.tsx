@@ -76,6 +76,10 @@ export default function BuatLaporanScreen() {
       Alert.alert('Error', 'Deskripsi harus diisi');
       return;
     }
+    if (images.length === 0) {
+      Alert.alert('Error', 'Anda harus menyertakan minimal 1 gambar sebagai bukti.');
+      return;
+    }
 
     setSubmitting(true);
     try {
