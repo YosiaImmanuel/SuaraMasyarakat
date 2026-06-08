@@ -110,24 +110,26 @@ export default function SuperAdminLaporanListScreen() {
         </View>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
-        {statusFilters.map((f) => (
-          <TouchableOpacity
-            key={f.value}
-            style={[styles.filterChip, statusFilter === f.value && styles.filterChipActive]}
-            onPress={() => setStatusFilter(f.value)}
-          >
-            <Text
-              style={[
-                styles.filterChipText,
-                statusFilter === f.value && styles.filterChipTextActive,
-              ]}
+      <View style={styles.filterSection}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryList} contentContainerStyle={styles.categoryListContent}>
+          {statusFilters.map((f) => (
+            <TouchableOpacity
+              key={f.value}
+              style={[styles.filterChip, statusFilter === f.value && styles.filterChipActive]}
+              onPress={() => setStatusFilter(f.value)}
             >
-              {f.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              <Text
+                style={[
+                  styles.filterChipText,
+                  statusFilter === f.value && styles.filterChipTextActive,
+                ]}
+              >
+                {f.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       {loading ? (
         <Loading />
@@ -215,10 +217,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.light.text,
   },
-  filterRow: {
+  filterSection: {
     paddingHorizontal: Spacing.lg,
     marginBottom: Spacing.md,
-    height: 50,
+  },
+  categoryList: {
+    flexDirection: 'row',
+  },
+  categoryListContent: {
+    alignItems: 'center',
   },
   filterChip: {
     paddingHorizontal: Spacing.lg,

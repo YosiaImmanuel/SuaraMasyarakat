@@ -159,25 +159,27 @@ export default function SuperAdminUsersScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
-        <TouchableOpacity
-          style={[styles.filterChip, !roleFilter && styles.filterChipActive]}
-          onPress={() => setRoleFilter('')}
-        >
-          <Text style={[styles.filterChipText, !roleFilter && styles.filterChipTextActive]}>Semua</Text>
-        </TouchableOpacity>
-        {roles.map((r) => (
+      <View style={styles.filterSection}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryList} contentContainerStyle={styles.categoryListContent}>
           <TouchableOpacity
-            key={r.value}
-            style={[styles.filterChip, roleFilter === r.value && styles.filterChipActive]}
-            onPress={() => setRoleFilter(roleFilter === r.value ? '' : r.value)}
+            style={[styles.filterChip, !roleFilter && styles.filterChipActive]}
+            onPress={() => setRoleFilter('')}
           >
-            <Text style={[styles.filterChipText, roleFilter === r.value && styles.filterChipTextActive]}>
-              {r.label}
-            </Text>
+            <Text style={[styles.filterChipText, !roleFilter && styles.filterChipTextActive]}>Semua</Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+          {roles.map((r) => (
+            <TouchableOpacity
+              key={r.value}
+              style={[styles.filterChip, roleFilter === r.value && styles.filterChipActive]}
+              onPress={() => setRoleFilter(roleFilter === r.value ? '' : r.value)}
+            >
+              <Text style={[styles.filterChipText, roleFilter === r.value && styles.filterChipTextActive]}>
+                {r.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       {showForm && (
         <View style={styles.formCard}>
@@ -317,7 +319,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   addButtonText: { color: '#fff', fontSize: 22, fontWeight: '700' },
-  filterRow: { paddingHorizontal: Spacing.lg, marginBottom: Spacing.sm },
+  filterSection: { paddingHorizontal: Spacing.lg, marginBottom: Spacing.md },
+  categoryList: { flexDirection: 'row' },
+  categoryListContent: { alignItems: 'center' },
   filterChip: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
