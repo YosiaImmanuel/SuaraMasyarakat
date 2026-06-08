@@ -29,8 +29,8 @@ interface Props {
 }
 
 export default function StatusBadge({ status, size = 'md' }: Props) {
-  const config = statusConfig[status];
-  const isSmall = size === 'sm';
+const config = statusConfig[status];
+const isSmall = size === 'sm';
 
   return (
     <View style={[styles.badge, { backgroundColor: config.bg }, isSmall && styles.badgeSm]}>

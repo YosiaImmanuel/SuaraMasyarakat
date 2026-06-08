@@ -27,10 +27,26 @@ export default function AdminProfilScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const clearMessages = () => {
+    setError('');
+    setSuccess('');
+  };
+
+  const initials = user?.nama
+    ? user.nama.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
+    : '?';
 
   async function handleUpdateProfile() {
+    clearMessages();
     if (!nama.trim() || !email.trim()) {
-      Alert.alert('Error', 'Nama dan email harus diisi');
+      setError('Nama dan email harus diisi');
       return;
     }
     setSaving(true);
@@ -40,25 +56,30 @@ export default function AdminProfilScreen() {
         body: JSON.stringify({ nama: nama.trim(), email: email.trim() }),
       });
       await refreshProfile();
-      Alert.alert('Berhasil', 'Profil berhasil diperbarui');
+      setSuccess('Profil berhasil diperbarui');
     } catch (err: any) {
-      Alert.alert('Gagal', err.message);
+      setError(err.message);
     } finally {
       setSaving(false);
     }
   }
 
   async function handleChangePassword() {
+    clearMessages();
     if (!currentPassword.trim()) {
-      Alert.alert('Error', 'Password saat ini harus diisi');
+      setError('Password saat ini harus diisi');
       return;
     }
-    if (newPassword.length < 6 || !/[A-Z]/.test(newPassword)) {
-      Alert.alert('Error', 'Password baru minimal 6 karakter dan mengandung huruf kapital');
+    if (newPassword.length < 6) {
+      setError('Password baru minimal 6 karakter');
+      return;
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      setError('Password baru harus mengandung huruf kapital');
       return;
     }
     if (newPassword !== confirmPassword) {
-      Alert.alert('Error', 'Konfirmasi password tidak cocok');
+      setError('Konfirmasi password tidak cocok');
       return;
     }
     setSaving(true);
@@ -75,9 +96,9 @@ export default function AdminProfilScreen() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      Alert.alert('Berhasil', 'Password berhasil diubah');
+      setSuccess('Password berhasil diubah');
     } catch (err: any) {
-      Alert.alert('Gagal', err.message);
+      setError(err.message);
     } finally {
       setSaving(false);
     }
@@ -100,129 +121,284 @@ export default function AdminProfilScreen() {
     );
   }
 
+  const handleTabChange = (tab: Tab) => {
+    setActiveTab(tab);
+    clearMessages();
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <View style={styles.avatarLarge}>
-            <Text style={styles.avatarLargeText}>
-              {user?.nama?.charAt(0).toUpperCase() || '?'}
-            </Text>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.pageHeader}>
+          <View style={styles.headerRow}>
+            <View style={styles.headerTextWrap}>
+              <Text style={styles.pageHeaderTitle}>Profil</Text>
+              <Text style={styles.pageHeaderSubtitle}>Kelola informasi akun Anda</Text>
+            </View>
           </View>
-          <Text style={styles.userName}>{user?.nama}</Text>
-          <View style={styles.headerRoleBadge}>
-            <Text style={styles.headerRoleText}>Admin</Text>
-          </View>
-          <Text style={styles.userEmail}>{user?.email}</Text>
         </View>
 
-        <View style={styles.tabRow}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'info' && styles.tabActive]}
-            onPress={() => setActiveTab('info')}
-          >
-            <Text style={[styles.tabText, activeTab === 'info' && styles.tabTextActive]}>
-              Informasi
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'keamanan' && styles.tabActive]}
-            onPress={() => setActiveTab('keamanan')}
-          >
-            <Text style={[styles.tabText, activeTab === 'keamanan' && styles.tabTextActive]}>
-              Keamanan
-            </Text>
-          </TouchableOpacity>
+        {/* Hero Card */}
+        <View style={styles.heroCard}>
+          <View style={styles.heroAccent} />
+          <View style={styles.heroBody}>
+            <View style={styles.heroLeft}>
+              <View style={styles.avatarLarge}>
+                <Text style={styles.avatarLargeText}>{initials}</Text>
+              </View>
+              <View style={styles.heroInfo}>
+                <Text style={styles.heroRoleLabel}>PROFIL PENGGUNA</Text>
+                <Text style={styles.heroName}>{user?.nama}</Text>
+                <Text style={styles.heroEmail}>{user?.email}</Text>
+                <View style={styles.heroBadgeRow}>
+                  <View style={styles.roleBadge}>
+                    <Text style={styles.roleBadgeText}>Admin</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </View>
         </View>
 
-        {activeTab === 'info' ? (
-          <View style={styles.formSection}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Nama Lengkap</Text>
-              <TextInput
-                style={styles.input}
-                value={nama}
-                onChangeText={setNama}
-                editable={!saving}
-              />
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                editable={!saving}
-              />
-            </View>
+        {/* Main Card with Tabs */}
+        <View style={styles.mainCard}>
+          {/* Tab Bar */}
+          <View style={styles.tabRow}>
             <TouchableOpacity
-              style={[styles.saveButton, saving && styles.saveButtonDisabled]}
-              onPress={handleUpdateProfile}
-              disabled={saving}
+              style={[styles.tab, activeTab === 'info' && styles.tabActive]}
+              onPress={() => handleTabChange('info')}
+              activeOpacity={0.7}
             >
-              {saving ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.saveButtonText}>Simpan Perubahan</Text>
-              )}
+              <Text style={[styles.tabText, activeTab === 'info' && styles.tabTextActive]}>
+                Informasi
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-              <Text style={styles.logoutButtonText}>Keluar</Text>
+            <TouchableOpacity
+              style={[styles.tab, activeTab === 'keamanan' && styles.tabActive]}
+              onPress={() => handleTabChange('keamanan')}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.tabText, activeTab === 'keamanan' && styles.tabTextActive]}>
+                Keamanan
+              </Text>
             </TouchableOpacity>
           </View>
-        ) : (
-          <View style={styles.formSection}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password Saat Ini</Text>
-              <TextInput
-                style={styles.input}
-                value={currentPassword}
-                onChangeText={setCurrentPassword}
-                secureTextEntry
-                editable={!saving}
-              />
+
+          {/* Alert Messages */}
+          {(error || success) ? (
+            <View style={[styles.alertBox, error ? styles.alertError : styles.alertSuccess]}>
+              <Text style={styles.alertIcon}>{error ? '⚠️' : '✅'}</Text>
+              <Text style={[styles.alertText, error ? { color: '#dc2626' } : { color: '#059669' }]}>
+                {error || success}
+              </Text>
+              <TouchableOpacity onPress={clearMessages} activeOpacity={0.7}>
+                <Text style={styles.alertClose}>✕</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password Baru</Text>
-              <TextInput
-                style={styles.input}
-                value={newPassword}
-                onChangeText={setNewPassword}
-                secureTextEntry
-                editable={!saving}
-              />
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Konfirmasi Password Baru</Text>
-              <TextInput
-                style={styles.input}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-                editable={!saving}
-              />
-            </View>
-            <TouchableOpacity
-              style={[styles.saveButton, saving && styles.saveButtonDisabled]}
-              onPress={handleChangePassword}
-              disabled={saving}
-            >
-              {saving ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.saveButtonText}>Ubah Password</Text>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
-              <Text style={styles.deleteButtonText}>Hapus Akun</Text>
-            </TouchableOpacity>
+          ) : null}
+
+          {/* Tab Content */}
+          <View style={styles.tabContent}>
+            {activeTab === 'info' && (
+              <View>
+                <View style={styles.sectionHeader}>
+                  <View>
+                    <Text style={styles.sectionTitle}>Informasi Pribadi</Text>
+                    <Text style={styles.sectionSubtitle}>Detail akun dan identitas Anda</Text>
+                  </View>
+                </View>
+
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>NAMA LENGKAP</Text>
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      style={styles.input}
+                      value={nama}
+                      onChangeText={setNama}
+                      editable={!saving}
+                      placeholder="Masukkan nama lengkap"
+                      placeholderTextColor={Colors.light.textMuted}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>ALAMAT EMAIL</Text>
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      style={styles.input}
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      editable={!saving}
+                      placeholder="nama@contoh.com"
+                      placeholderTextColor={Colors.light.textMuted}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.formActionsRight}>
+                  <TouchableOpacity
+                    style={[styles.saveBtn, saving && styles.disabledBtn]}
+                    onPress={handleUpdateProfile}
+                    disabled={saving}
+                  >
+                    {saving ? (
+                      <ActivityIndicator color="#fff" size="small" />
+                    ) : (
+                      <Text style={styles.saveBtnText}>💾 Simpan Perubahan</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {activeTab === 'keamanan' && (
+              <View>
+                <View style={styles.sectionHeader}>
+                  <View>
+                    <Text style={styles.sectionTitle}>Ubah Kata Sandi</Text>
+                    <Text style={styles.sectionSubtitle}>Pastikan kata sandi Anda kuat dan unik</Text>
+                  </View>
+                </View>
+
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>KATA SANDI SAAT INI</Text>
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      style={[styles.input, { flex: 1 }]}
+                      placeholder="Masukkan kata sandi saat ini"
+                      placeholderTextColor={Colors.light.textMuted}
+                      value={currentPassword}
+                      onChangeText={setCurrentPassword}
+                      secureTextEntry={!showCurrent}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={() => setShowCurrent((s) => !s)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Text style={styles.eyeText}>{showCurrent ? '🙈' : '👁️'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>KATA SANDI BARU</Text>
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      style={[styles.input, { flex: 1 }]}
+                      placeholder="Minimal 6 karakter"
+                      placeholderTextColor={Colors.light.textMuted}
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                      secureTextEntry={!showNew}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={() => setShowNew((s) => !s)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Text style={styles.eyeText}>{showNew ? '🙈' : '👁️'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>KONFIRMASI KATA SANDI</Text>
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      style={[styles.input, { flex: 1 }]}
+                      placeholder="Ulangi kata sandi baru"
+                      placeholderTextColor={Colors.light.textMuted}
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      secureTextEntry={!showConfirm}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={() => setShowConfirm((s) => !s)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Text style={styles.eyeText}>{showConfirm ? '🙈' : '👁️'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Validation Hints */}
+                <View style={styles.hintsRow}>
+                  {[
+                    { label: 'Min. 6 karakter', pass: newPassword.length >= 6 },
+                    { label: 'Huruf kapital (A-Z)', pass: /[A-Z]/.test(newPassword) },
+                    { label: 'Kata sandi cocok', pass: newPassword.length > 0 && newPassword === confirmPassword },
+                  ].map((hint) => (
+                    <View
+                      key={hint.label}
+                      style={[styles.hintChip, hint.pass && styles.hintChipPass]}
+                    >
+                      <Text style={[styles.hintIcon, hint.pass && { opacity: 1 }]}>
+                        {hint.pass ? '✅' : '○'}
+                      </Text>
+                      <Text style={[styles.hintText, hint.pass && styles.hintTextPass]}>
+                        {hint.label}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+
+                <View style={styles.formActionsRight}>
+                  <TouchableOpacity
+                    style={[styles.saveBtn, saving && styles.disabledBtn]}
+                    onPress={handleChangePassword}
+                    disabled={saving}
+                  >
+                    {saving ? (
+                      <ActivityIndicator color="#fff" size="small" />
+                    ) : (
+                      <Text style={styles.saveBtnText}>🔒 Simpan Kata Sandi</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {/* Delete Account */}
+                <View style={styles.deleteCard}>
+                  <View style={styles.deleteCardInner}>
+                    <View style={styles.deleteIconBox}>
+                      <Text style={styles.deleteIcon}>🗑️</Text>
+                    </View>
+                    <View style={styles.deleteTextWrap}>
+                      <Text style={styles.deleteTitle}>Hapus Akun Secara Permanen</Text>
+                      <Text style={styles.deleteDesc}>
+                        Hubungi super admin untuk menghapus akun Anda.
+                      </Text>
+                      <TouchableOpacity
+                        style={styles.deleteStartBtn}
+                        onPress={handleDeleteAccount}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.deleteStartBtnText}>Hapus Akun</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            )}
           </View>
-        )}
+        </View>
+
+        {/* Logout Button */}
+        <TouchableOpacity style={styles.logoutBtn} onPress={logout} activeOpacity={0.7}>
+          <Text style={styles.logoutBtnText}>🚪 Keluar</Text>
+        </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -231,91 +407,331 @@ export default function AdminProfilScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.light.background },
   content: { paddingBottom: Spacing['3xl'] },
-  header: {
+
+  pageHeader: {
     backgroundColor: Colors.light.primary,
+    paddingHorizontal: Spacing.xl,
     paddingTop: 60,
-    paddingBottom: Spacing['2xl'],
-    alignItems: 'center',
-    borderBottomLeftRadius: BorderRadius['2xl'],
-    borderBottomRightRadius: BorderRadius['2xl'],
+    paddingBottom: Spacing.xl,
   },
-  avatarLarge: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.md,
-  },
-  avatarLargeText: { color: '#fff', fontSize: 36, fontWeight: '700' },
-  userName: { fontSize: 22, fontWeight: '700', color: '#fff', marginBottom: 4 },
-  headerRoleBadge: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 3,
-    borderRadius: BorderRadius.full,
-    marginBottom: Spacing.sm,
-  },
-  headerRoleText: { fontSize: 13, fontWeight: '600', color: '#fff' },
-  userEmail: { fontSize: 14, color: 'rgba(255,255,255,0.8)' },
-  tabRow: {
+  headerRow: {
     flexDirection: 'row',
-    marginHorizontal: Spacing.lg,
-    marginTop: Spacing.xl,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTextWrap: {
+    flex: 1,
+    marginRight: Spacing.md,
+  },
+  pageHeaderTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  pageHeaderSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 4,
+  },
+
+  // Hero
+  heroCard: {
     backgroundColor: Colors.light.surface,
-    borderRadius: BorderRadius.md,
-    padding: 4,
+    borderRadius: BorderRadius.lg,
     borderWidth: 1,
     borderColor: Colors.light.border,
+    overflow: 'hidden',
+    marginBottom: Spacing.md,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.lg,
+  },
+  heroAccent: {
+    height: 6,
+    backgroundColor: Colors.light.primary,
+  },
+  heroBody: {
+    padding: Spacing.xl,
+  },
+  heroLeft: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.lg,
+  },
+  avatarLarge: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    backgroundColor: Colors.light.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarLargeText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  heroInfo: { flex: 1 },
+  heroRoleLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    color: Colors.light.primary,
+    marginBottom: 2,
+  },
+  heroName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.light.text,
+    marginBottom: 1,
+  },
+  heroEmail: {
+    fontSize: 14,
+    color: Colors.light.textMuted,
+    marginBottom: Spacing.sm,
+  },
+  heroBadgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  roleBadge: {
+    backgroundColor: '#eff6ff',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.full,
+  },
+  roleBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.light.primary,
+  },
+
+  // Main Card
+  mainCard: {
+    backgroundColor: Colors.light.surface,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    overflow: 'hidden',
+    marginHorizontal: Spacing.lg,
+  },
+  tabRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.light.borderLight,
   },
   tab: {
     flex: 1,
-    paddingVertical: Spacing.sm,
+    paddingVertical: Spacing.md,
     alignItems: 'center',
-    borderRadius: BorderRadius.sm,
   },
-  tabActive: { backgroundColor: Colors.light.primary },
-  tabText: { fontSize: 14, fontWeight: '600', color: Colors.light.textSecondary },
-  tabTextActive: { color: '#fff' },
-  formSection: {
-    padding: Spacing.lg,
-    gap: Spacing.lg,
+  tabActive: {
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.light.primary,
   },
-  inputGroup: { gap: Spacing.sm },
-  label: { fontSize: 14, fontWeight: '600', color: Colors.light.text },
-  input: {
-    backgroundColor: Colors.light.surface,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.light.textMuted,
+  },
+  tabTextActive: {
+    color: Colors.light.primary,
+  },
+
+  // Alerts
+  alertBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.md,
+    padding: Spacing.md,
     borderRadius: BorderRadius.md,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: 14,
+    gap: Spacing.sm,
+  },
+  alertError: {
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+  },
+  alertSuccess: {
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+  },
+  alertIcon: { fontSize: 16 },
+  alertText: { flex: 1, fontSize: 13, fontWeight: '500' },
+  alertClose: { fontSize: 16, color: '#9ca3af', paddingLeft: 4 },
+
+  tabContent: { padding: Spacing.lg },
+
+  // Section Header
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: Spacing.xl,
+  },
+  sectionTitle: {
     fontSize: 16,
+    fontWeight: '700',
     color: Colors.light.text,
   },
-  saveButton: {
-    backgroundColor: Colors.light.primary,
-    borderRadius: BorderRadius.md,
-    paddingVertical: 16,
-    alignItems: 'center',
+  sectionSubtitle: {
+    fontSize: 12,
+    color: Colors.light.textMuted,
+    marginTop: 2,
   },
-  saveButtonDisabled: { opacity: 0.6 },
-  saveButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  logoutButton: {
+
+  // Inline Input Fields (login-like)
+  fieldGroup: { gap: 6 },
+  fieldLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.light.textSecondary,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.light.background,
     borderWidth: 1,
     borderColor: Colors.light.border,
     borderRadius: BorderRadius.md,
-    paddingVertical: 14,
+    height: 44,
+  },
+  input: {
+    flex: 1,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: Colors.light.text,
+    height: '100%',
+  },
+  eyeButton: {
+    paddingHorizontal: 12,
+    height: '100%',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  logoutButtonText: { color: Colors.light.text, fontSize: 15, fontWeight: '600' },
-  deleteButton: {
-    borderWidth: 1,
-    borderColor: Colors.light.destructive,
+  eyeText: { fontSize: 17 },
+
+  formActionsRight: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: Spacing.md,
+  },
+  saveBtn: {
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: 12,
     borderRadius: BorderRadius.md,
-    paddingVertical: 14,
+    backgroundColor: Colors.light.primary,
     alignItems: 'center',
+    minWidth: 140,
   },
-  deleteButtonText: { color: Colors.light.destructive, fontSize: 15, fontWeight: '600' },
+  disabledBtn: { opacity: 0.6 },
+  saveBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#fff',
+  },
+
+  // Password fields
+  hintsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginTop: Spacing.md,
+  },
+  hintChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: BorderRadius.full,
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  hintChipPass: {
+    backgroundColor: '#f0fdf4',
+    borderColor: '#bbf7d0',
+  },
+  hintIcon: { fontSize: 12, opacity: 0.4 },
+  hintText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: Colors.light.textMuted,
+  },
+  hintTextPass: {
+    color: '#059669',
+  },
+
+  // Delete Account
+  deleteCard: {
+    borderRadius: BorderRadius.lg,
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    overflow: 'hidden',
+    marginTop: Spacing.xl,
+  },
+  deleteCardInner: {
+    flexDirection: 'row',
+    padding: Spacing.xl,
+    gap: Spacing.md,
+  },
+  deleteIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.md,
+    backgroundColor: '#fee2e2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteIcon: { fontSize: 20 },
+  deleteTextWrap: { flex: 1 },
+  deleteTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#991b1b',
+    marginBottom: 4,
+  },
+  deleteDesc: {
+    fontSize: 12,
+    color: '#b91c1c',
+    lineHeight: 18,
+    marginBottom: Spacing.md,
+  },
+  deleteStartBtn: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 10,
+    backgroundColor: '#fee2e2',
+    borderRadius: BorderRadius.md,
+    alignSelf: 'flex-start',
+  },
+  deleteStartBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#dc2626',
+  },
+
+  // Logout
+  logoutBtn: {
+    backgroundColor: Colors.light.surface,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: Spacing.lg,
+    marginHorizontal: Spacing.lg,
+  },
+  logoutBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.light.text,
+  },
 });

@@ -85,18 +85,29 @@ export default function AdminLaporanListScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Semua Laporan</Text>
-        <Text style={styles.headerSubtitle}>Kelola semua laporan warga</Text>
+        <View style={styles.headerRow}>
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.headerTitle}>Semua Laporan</Text>
+            <Text style={styles.headerSubtitle}>Kelola semua laporan warga</Text>
+          </View>
+        </View>
       </View>
 
       <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Cari laporan..."
-          placeholderTextColor={Colors.light.textMuted}
-          value={search}
-          onChangeText={setSearch}
-        />
+        <View style={styles.searchRow}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Cari laporan..."
+            placeholderTextColor={Colors.light.textMuted}
+            value={search}
+            onChangeText={setSearch}
+          />
+          {search.length > 0 && (
+            <TouchableOpacity style={styles.searchClear} onPress={() => setSearch('')}>
+              <Text style={styles.searchClearText}>✕</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
@@ -154,6 +165,15 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: Spacing.xl,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTextWrap: {
+    flex: 1,
+    marginRight: Spacing.md,
+  },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
@@ -167,6 +187,23 @@ const styles = StyleSheet.create({
   searchContainer: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    position: 'relative',
+  },
+  searchClear: {
+    position: 'absolute',
+    right: 12,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  searchClearText: {
+    fontSize: 14,
+    color: Colors.light.textMuted,
   },
   searchInput: {
     backgroundColor: Colors.light.surface,

@@ -109,8 +109,12 @@ export default function AdminKategoriScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Kategori</Text>
-        <Text style={styles.headerSubtitle}>Kelola kategori laporan</Text>
+        <View style={styles.headerRow}>
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.headerTitle}>Kategori</Text>
+            <Text style={styles.headerSubtitle}>Kelola kategori laporan</Text>
+          </View>
+        </View>
       </View>
 
       <View style={styles.headerActions}>
@@ -198,6 +202,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
     paddingTop: 60,
     paddingBottom: Spacing.xl,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTextWrap: {
+    flex: 1,
+    marginRight: Spacing.md,
   },
   headerTitle: {
     fontSize: 24,

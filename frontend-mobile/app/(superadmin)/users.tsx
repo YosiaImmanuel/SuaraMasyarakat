@@ -138,8 +138,12 @@ export default function SuperAdminUsersScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Kelola Users</Text>
-        <Text style={styles.headerSubtitle}>Manajemen pengguna aplikasi</Text>
+        <View style={styles.headerRow}>
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.headerTitle}>Kelola Users</Text>
+            <Text style={styles.headerSubtitle}>Manajemen pengguna aplikasi</Text>
+          </View>
+        </View>
       </View>
 
       <View style={styles.searchRow}>
@@ -276,6 +280,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
     paddingTop: 60,
     paddingBottom: Spacing.xl,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTextWrap: {
+    flex: 1,
+    marginRight: Spacing.md,
   },
   headerTitle: { fontSize: 24, fontWeight: '700', color: '#fff' },
   headerSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.8)', marginTop: 4 },

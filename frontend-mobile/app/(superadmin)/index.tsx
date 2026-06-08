@@ -18,8 +18,6 @@ import Loading from '@/src/components/ui/Loading';
 import EmptyState from '@/src/components/ui/EmptyState';
 
 export default function SuperAdminDashboardScreen() {
-  const { user } = useAuth();
-
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentLaporan, setRecentLaporan] = useState<Laporan[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -70,12 +68,13 @@ export default function SuperAdminDashboardScreen() {
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <View style={styles.headerGradient}>
-        <Text style={styles.greeting}>
-          Halo, {user?.nama?.split(' ')[0] || 'Super Admin'}
-        </Text>
-        <View style={styles.roleBadge}>
-          <Text style={styles.roleText}>Super Admin</Text>
+      <View style={styles.header}>
+        <View style={styles.headerRow}>
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.headerTitle}>Dashboard</Text>
+            <Text style={styles.headerSubtitle}>Overview aplikasi</Text>
+          </View>
+          <View style={styles.roleBadge}><Text style={styles.roleText}>Super Admin</Text></View>
         </View>
       </View>
 
@@ -117,19 +116,30 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: Spacing['3xl'],
   },
-  headerGradient: {
+  header: {
     backgroundColor: Colors.light.primary,
     paddingHorizontal: Spacing.xl,
     paddingTop: 60,
-    paddingBottom: Spacing['2xl'],
-    borderBottomLeftRadius: BorderRadius['2xl'],
-    borderBottomRightRadius: BorderRadius['2xl'],
+    paddingBottom: Spacing.xl,
   },
-  greeting: {
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTextWrap: {
+    flex: 1,
+    marginRight: Spacing.md,
+  },
+  headerTitle: {
     fontSize: 24,
     fontWeight: '700',
     color: '#fff',
-    marginBottom: Spacing.xs,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 4,
   },
   roleBadge: {
     alignSelf: 'flex-start',
