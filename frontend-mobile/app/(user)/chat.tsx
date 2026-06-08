@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, RefreshControl, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiFetch } from '@/src/lib/api';
 import { User, Conversation } from '@/src/types';
 import { ENDPOINTS } from '@/src/constants/api';
@@ -13,7 +12,6 @@ import EmptyState from '@/src/components/ui/EmptyState';
 type Tab = 'percakapan' | 'pengguna';
 
 export default function ChatListScreen() {
-  const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<Tab>('percakapan');
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -115,9 +113,13 @@ export default function ChatListScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + Spacing.lg }]}>
-        <Text style={styles.headerTitle}>Chat</Text>
-        <Text style={styles.headerSubtitle}>Pesan dengan pengguna lain</Text>
+      <View style={styles.header}>
+        <View style={styles.headerRow}>
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.headerTitle}>Chat</Text>
+            <Text style={styles.headerSubtitle}>Pesan dengan pengguna lain</Text>
+          </View>
+        </View>
       </View>
 
       <View style={styles.searchContainer}>
@@ -168,7 +170,9 @@ export default function ChatListScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.light.background },
-  header: { backgroundColor: Colors.light.primary, paddingHorizontal: Spacing.xl, paddingBottom: Spacing.xl },
+  header: { backgroundColor: Colors.light.primary, paddingHorizontal: Spacing.xl, paddingTop: 60, paddingBottom: Spacing.xl },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  headerTextWrap: { flex: 1, marginRight: Spacing.md },
   headerTitle: { fontSize: 24, fontWeight: '700', color: '#fff' },
   headerSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
   searchContainer: { paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md },

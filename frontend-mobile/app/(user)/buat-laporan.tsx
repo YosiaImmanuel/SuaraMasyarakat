@@ -117,8 +117,12 @@ export default function BuatLaporanScreen() {
     >
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Buat Laporan</Text>
-          <Text style={styles.headerSubtitle}>Sampaikan pengaduan Anda</Text>
+          <View style={styles.headerRow}>
+            <View style={styles.headerTextWrap}>
+              <Text style={styles.headerTitle}>Buat Laporan Baru</Text>
+              <Text style={styles.headerSubtitle}>Sampaikan pengaduan Anda</Text>
+            </View>
+          </View>
         </View>
 
         <View style={styles.form}>
@@ -240,6 +244,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
     paddingTop: 60,
     paddingBottom: Spacing.xl,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTextWrap: {
+    flex: 1,
+    marginRight: Spacing.md,
   },
   headerTitle: {
     fontSize: 24,

@@ -127,21 +127,26 @@ export default function UserDashboardScreen() {
   if (loading) return <Loading fullScreen />;
 
   return (
-    <ScrollView
-      style={s.container}
-      contentContainerStyle={s.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      <View style={s.dashHeader}>
-        <Text style={s.dashTitle}>Dashboard</Text>
-        <TouchableOpacity
-          style={s.buatBtn}
-          onPress={() => router.push('/(user)/buat-laporan')}
-          activeOpacity={0.8}
-        >
-          <Text style={s.buatBtnText}>+ Buat Laporan</Text>
-        </TouchableOpacity>
+    <View style={s.container}>
+      <View style={s.header}>
+        <View style={s.headerRow}>
+          <View style={s.headerTextWrap}>
+            <Text style={s.headerTitle}>Dashboard</Text>
+            <Text style={s.headerSubtitle}>Overview laporan Anda</Text>
+          </View>
+          <TouchableOpacity
+            style={s.buatBtn}
+            onPress={() => router.push('/(user)/buat-laporan')}
+            activeOpacity={0.8}
+          >
+            <Text style={s.buatBtnText}>+ Buat Laporan</Text>
+          </TouchableOpacity>
+        </View>
       </View>
+      <ScrollView
+        contentContainerStyle={s.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
 
       <View style={s.card}>
         <Text style={s.cardLabel}>LAPORAN SAYA</Text>
@@ -292,27 +297,42 @@ export default function UserDashboardScreen() {
         )}
       </View>
     </ScrollView>
+    </View>
   );
 }
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.light.background },
-  content: { padding: Spacing.lg, paddingBottom: Spacing['3xl'] },
+  content: { paddingBottom: Spacing['3xl'] },
 
-  dashHeader: {
+  header: {
+    backgroundColor: Colors.light.primary,
+    paddingHorizontal: Spacing.xl,
+    paddingTop: 60,
+    paddingBottom: Spacing.xl,
+  },
+  headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.xl,
   },
-  dashTitle: {
-    fontSize: 22,
+  headerTextWrap: {
+    flex: 1,
+    marginRight: Spacing.md,
+  },
+  headerTitle: {
+    fontSize: 24,
     fontWeight: '700',
-    color: Colors.light.text,
+    color: '#fff',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 4,
   },
   buatBtn: {
-    backgroundColor: Colors.light.primary,
-    paddingHorizontal: Spacing.lg,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.md,
   },
@@ -329,6 +349,7 @@ const s = StyleSheet.create({
     borderColor: Colors.light.border,
     padding: Spacing.xl,
     marginBottom: Spacing.lg,
+    marginHorizontal: Spacing.lg,
   },
   cardLabel: {
     fontSize: 11,
@@ -405,6 +426,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.light.border,
     overflow: 'hidden',
+    marginHorizontal: Spacing.lg,
   },
   feedHeader: {
     flexDirection: 'row',

@@ -11,6 +11,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { router } from 'expo-router';
 import { apiFetch } from '@/src/lib/api';
 import { Laporan } from '@/src/types';
 import { ENDPOINTS } from '@/src/constants/api';
@@ -97,8 +98,19 @@ export default function LaporanSayaScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Laporan Saya</Text>
-        <Text style={styles.headerSubtitle}>Riwayat laporan yang Anda buat</Text>
+        <View style={styles.headerRow}>
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.headerTitle}>Laporan Saya</Text>
+            <Text style={styles.headerSubtitle}>Riwayat laporan yang Anda buat</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.buatBtn}
+            onPress={() => router.push('/(user)/buat-laporan')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.buatBtnText}>+ Buat Laporan</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.searchContainer}>
@@ -110,6 +122,15 @@ export default function LaporanSayaScreen() {
             value={search}
             onChangeText={setSearch}
           />
+          {search.length > 0 && (
+            <TouchableOpacity
+              style={styles.searchClear}
+              onPress={() => setSearch('')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.searchClearText}>✕</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -168,6 +189,15 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: Spacing.xl,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTextWrap: {
+    flex: 1,
+    marginRight: Spacing.md,
+  },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
@@ -178,6 +208,17 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     marginTop: 4,
   },
+  buatBtn: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+  },
+  buatBtnText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+  },
   searchContainer: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
@@ -185,6 +226,7 @@ const styles = StyleSheet.create({
   searchRow: {
     flexDirection: 'row',
     gap: Spacing.sm,
+    position: 'relative',
   },
   searchInput: {
     flex: 1,
@@ -196,6 +238,18 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 15,
     color: Colors.light.text,
+  },
+  searchClear: {
+    position: 'absolute',
+    right: 12,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  searchClearText: {
+    fontSize: 14,
+    color: Colors.light.textMuted,
   },
   filterRow: {
     paddingHorizontal: Spacing.lg,
