@@ -114,32 +114,40 @@ export default function FeedScreen() {
         </View>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
-        <TouchableOpacity
-          style={[styles.filterChip, !selectedCategory && styles.filterChipActive]}
-          onPress={() => setSelectedCategory(null)}
+      <View style={styles.filterSection}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoryList}
+          contentContainerStyle={styles.categoryListContent}
         >
-          <Text style={[styles.filterChipText, !selectedCategory && styles.filterChipTextActive]}>
-            Semua
-          </Text>
-        </TouchableOpacity>
-        {categories.map((cat) => (
           <TouchableOpacity
-            key={cat.id}
-            style={[styles.filterChip, selectedCategory === cat.id && styles.filterChipActive]}
-            onPress={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+            key="all"
+            style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
+            onPress={() => setSelectedCategory(null)}
           >
-            <Text
-              style={[
-                styles.filterChipText,
-                selectedCategory === cat.id && styles.filterChipTextActive,
-              ]}
-            >
-              {cat.nama}
+            <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
+              Semua
             </Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+          {categories.map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={[styles.categoryChip, selectedCategory === cat.id && styles.categoryChipActive]}
+              onPress={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+            >
+              <Text
+                style={[
+                  styles.categoryChipText,
+                  selectedCategory === cat.id && styles.categoryChipTextActive,
+                ]}
+              >
+                {cat.nama}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       {loading ? (
         <Loading />
@@ -277,11 +285,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.light.textMuted,
   },
-  filterRow: {
+  filterSection: {
     paddingHorizontal: Spacing.lg,
     marginBottom: Spacing.md,
   },
-  filterChip: {
+  categoryList: {
+    flexDirection: 'row',
+  },
+  categoryListContent: {
+    alignItems: 'center',
+  },
+  categoryChip: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.full,
@@ -290,16 +304,16 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.light.surface,
     marginRight: Spacing.sm,
   },
-  filterChipActive: {
+  categoryChipActive: {
     backgroundColor: Colors.light.primary,
     borderColor: Colors.light.primary,
   },
-  filterChipText: {
-    fontSize: 13,
+  categoryChipText: {
+    fontSize: 14,
     color: Colors.light.text,
     fontWeight: '500',
   },
-  filterChipTextActive: {
+  categoryChipTextActive: {
     color: '#fff',
   },
   list: {
