@@ -4,7 +4,7 @@ import 'react-native-reanimated';
 import { AuthProvider } from '@/src/lib/auth-context';
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  anchor: '(user)',
 };
 
 export default function RootLayout() {
@@ -12,7 +12,9 @@ export default function RootLayout() {
     <AuthProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(user)" />
+        <Stack.Screen name="(admin)" />
+        <Stack.Screen name="(superadmin)" />
         <Stack.Screen
           name="laporan/[id]"
           options={{ headerShown: true, headerTitle: 'Detail Laporan', presentation: 'card' }}

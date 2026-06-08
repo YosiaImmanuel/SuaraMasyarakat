@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { router, useSegments, useRootNavigationState } from 'expo-router';
-import { User, AuthResponse } from '@/src/types';
+import { User } from '@/src/types';
 import { apiFetch } from './api';
 import { storage } from './storage';
 import { ENDPOINTS } from '@/src/constants/api';
@@ -26,10 +26,9 @@ function useProtectedRoute(user: User | null, isLoading: boolean) {
     if (isLoading || !navigationState?.key) return;
 
     const inAuthGroup = segments[0] === '(auth)';
-    const inTabsGroup = segments[0] === '(tabs)';
     const inDetail = segments[0] === 'laporan' || segments[0] === 'chat';
 
-    if (!user && !inAuthGroup) {
+    if (!user && !inAuthGroup && !inDetail) {
       router.replace('/(auth)/login');
     } else if (user && inAuthGroup) {
       const dashboard = getRoleDashboard(user.role);
@@ -38,8 +37,15 @@ function useProtectedRoute(user: User | null, isLoading: boolean) {
   }, [user, isLoading, segments, navigationState?.key]);
 }
 
-export function getRoleDashboard(role: string): '/' {
-  return '/';
+export function getRoleDashboard(role: string): string {
+  switch (role) {
+    case 'admin':
+      return '/(admin)';
+    case 'super_admin':
+      return '/(superadmin)';
+    default:
+      return '/(user)';
+  }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

@@ -27,9 +27,8 @@ const statusFilters = [
   { label: 'Ditolak', value: 'rejected' },
 ];
 
-export default function LaporanListScreen() {
+export default function LaporanSayaScreen() {
   const { user } = useAuth();
-  const isUser = user?.role === 'user';
   const [laporan, setLaporan] = useState<Laporan[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -39,18 +38,28 @@ export default function LaporanListScreen() {
 
   const fetchLaporan = useCallback(async () => {
     try {
-      const params: Record<string, string | number | undefined> = {};
-      if (statusFilter) params.status = statusFilter;
-      if (search.trim()) params.search = search.trim();
+      const data = await apiFetch<Laporan[]>(ENDPOINTS.LAPORAN.LIST);
+      const allLaporan = Array.isArray(data) ? data : [];
+      const myLaporan = allLaporan.filter((l) => l.user_id === user?.id);
 
-      const data = await apiFetch<Laporan[]>(ENDPOINTS.LAPORAN.LIST, { params });
-      setLaporan(Array.isArray(data) ? data : []);
+      let filtered = myLaporan;
+      if (statusFilter) {
+        filtered = filtered.filter((l) => l.status === statusFilter);
+      }
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        filtered = filtered.filter(
+          (l) => l.judul.toLowerCase().includes(q) || l.deskripsi.toLowerCase().includes(q)
+        );
+      }
+
+      setLaporan(filtered);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, search]);
+  }, [statusFilter, search, user]);
 
   useFocusEffect(
     useCallback(() => {
@@ -88,20 +97,20 @@ export default function LaporanListScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{isUser ? 'Laporan Saya' : 'Semua Laporan'}</Text>
-        <Text style={styles.headerSubtitle}>
-          {isUser ? 'Riwayat laporan yang Anda buat' : 'Kelola semua laporan warga'}
-        </Text>
+        <Text style={styles.headerTitle}>Laporan Saya</Text>
+        <Text style={styles.headerSubtitle}>Riwayat laporan yang Anda buat</Text>
       </View>
 
       <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Cari laporan..."
-          placeholderTextColor={Colors.light.textMuted}
-          value={search}
-          onChangeText={setSearch}
-        />
+        <View style={styles.searchRow}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Cari laporan..."
+            placeholderTextColor={Colors.light.textMuted}
+            value={search}
+            onChangeText={setSearch}
+          />
+        </View>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
@@ -131,7 +140,7 @@ export default function LaporanListScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
           {laporan.length === 0 ? (
-            <EmptyState title="Tidak ada laporan" message="Belum ada laporan yang tersedia" />
+            <EmptyState title="Tidak ada laporan" message="Anda belum membuat laporan" />
           ) : (
             laporan.map((item) => (
               <View key={item.id}>
@@ -173,7 +182,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
   },
+  searchRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
   searchInput: {
+    flex: 1,
     backgroundColor: Colors.light.surface,
     borderWidth: 1,
     borderColor: Colors.light.border,
@@ -186,6 +200,7 @@ const styles = StyleSheet.create({
   filterRow: {
     paddingHorizontal: Spacing.lg,
     marginBottom: Spacing.md,
+    height: 50,
   },
   filterChip: {
     paddingHorizontal: Spacing.lg,

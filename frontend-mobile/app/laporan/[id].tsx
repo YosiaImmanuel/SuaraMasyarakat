@@ -27,7 +27,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export default function LaporanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+  const isAdmin = user?.role === 'admin';
+  const canManage = user?.role === 'admin' || user?.role === 'super_admin';
   const isOwner = (userId: number) => user?.id === userId;
 
   const [laporan, setLaporan] = useState<Laporan | null>(null);
@@ -199,12 +200,12 @@ export default function LaporanDetailScreen() {
             </View>
           )}
 
-          {isAdmin && laporan.status === 'pending' && (
+          {isAdmin && (
             <View style={styles.adminActions}>
               <TouchableOpacity
-                style={[styles.actionButton, styles.approveButton]}
-                onPress={handleApprove}
-                disabled={changingStatus}
+                style={[styles.actionButton, styles.approveButton, laporan.status === 'approved' && styles.actionDisabled]}
+                onPress={() => laporan.status !== 'approved' && handleApprove()}
+                disabled={changingStatus || laporan.status === 'approved'}
               >
                 {changingStatus ? (
                   <ActivityIndicator size="small" color="#fff" />
@@ -213,9 +214,20 @@ export default function LaporanDetailScreen() {
                 )}
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.actionButton, styles.rejectButton]}
-                onPress={() => setRejectModalVisible(true)}
-                disabled={changingStatus}
+                style={[styles.actionButton, styles.pendingButton, laporan.status === 'pending' && styles.actionDisabled]}
+                onPress={() => laporan.status !== 'pending' && handleChangeStatus('pending')}
+                disabled={changingStatus || laporan.status === 'pending'}
+              >
+                {changingStatus ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.actionButtonText}>↻ Pending</Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.rejectButton, laporan.status === 'rejected' && styles.actionDisabled]}
+                onPress={() => laporan.status !== 'rejected' && setRejectModalVisible(true)}
+                disabled={changingStatus || laporan.status === 'rejected'}
               >
                 <Text style={styles.actionButtonText}>✕ Tolak</Text>
               </TouchableOpacity>
@@ -258,7 +270,7 @@ export default function LaporanDetailScreen() {
                     <Text style={styles.commentName}>{comment.nama_user || 'Anonymous'}</Text>
                     <Text style={styles.commentDate}>{formatDate(comment.created_at)}</Text>
                   </View>
-                  {(isAdmin || isOwner(comment.user_id)) && (
+                  {(canManage || isOwner(comment.user_id)) && (
                     <TouchableOpacity onPress={() => handleDeleteComment(comment.id)}>
                       <Text style={styles.deleteCommentText}>Hapus</Text>
                     </TouchableOpacity>
@@ -391,7 +403,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   approveButton: { backgroundColor: Colors.light.approved },
+  pendingButton: { backgroundColor: Colors.light.pending },
   rejectButton: { backgroundColor: Colors.light.rejected },
+  actionDisabled: { opacity: 0.4 },
   actionButtonText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   section: { paddingHorizontal: Spacing.lg, marginBottom: Spacing.lg },
   sectionTitle: {

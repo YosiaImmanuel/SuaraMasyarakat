@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,11 +14,10 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { apiUpload } from '@/src/lib/api';
+import { apiUpload, apiFetch } from '@/src/lib/api';
 import { Category } from '@/src/types';
 import { ENDPOINTS } from '@/src/constants/api';
-import { Colors, Spacing, BorderRadius, Shadow } from '@/constants/theme';
-import { apiFetch } from '@/src/lib/api';
+import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 
 export default function BuatLaporanScreen() {
   const [judul, setJudul] = useState('');

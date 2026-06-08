@@ -14,17 +14,11 @@ import {
 import { useAuth } from '@/src/lib/auth-context';
 import { apiFetch } from '@/src/lib/api';
 import { ENDPOINTS } from '@/src/constants/api';
-import { Colors, Spacing, BorderRadius, Shadow } from '@/constants/theme';
-
-const roleLabels: Record<string, string> = {
-  user: 'Warga',
-  admin: 'Admin',
-  super_admin: 'Super Admin',
-};
+import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 
 type Tab = 'info' | 'keamanan';
 
-export default function ProfilScreen() {
+export default function SuperAdminProfilScreen() {
   const { user, refreshProfile, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('info');
   const [nama, setNama] = useState(user?.nama || '');
@@ -92,16 +86,10 @@ export default function ProfilScreen() {
   function handleDeleteAccount() {
     Alert.alert(
       'Hapus Akun',
-      'Yakin ingin menghapus akun? Semua data akan terhapus permanen. Tindakan ini tidak dapat dibatalkan.',
+      'Yakin ingin menghapus akun? Semua data akan terhapus permanen.',
       [
         { text: 'Batal', style: 'cancel' },
-        {
-          text: 'Hapus Akun',
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert('Informasi', 'Untuk menghapus akun, silakan hubungi admin atau gunakan fitur hapus akun di pengaturan yang memerlukan verifikasi password.');
-          },
-        },
+        { text: 'Hapus Akun', style: 'destructive', onPress: () => {} },
       ]
     );
   }
@@ -120,9 +108,7 @@ export default function ProfilScreen() {
           </View>
           <Text style={styles.userName}>{user?.nama}</Text>
           <View style={styles.headerRoleBadge}>
-            <Text style={styles.headerRoleText}>
-              {roleLabels[user?.role || 'user']}
-            </Text>
+            <Text style={styles.headerRoleText}>Super Admin</Text>
           </View>
           <Text style={styles.userEmail}>{user?.email}</Text>
         </View>

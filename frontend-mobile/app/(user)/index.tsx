@@ -5,30 +5,20 @@ import {
   Text,
   ScrollView,
   RefreshControl,
-  TouchableOpacity,
   StyleSheet,
 } from 'react-native';
 import { useAuth } from '@/src/lib/auth-context';
 import { apiFetch } from '@/src/lib/api';
 import { Laporan, DashboardStats } from '@/src/types';
 import { ENDPOINTS } from '@/src/constants/api';
-import { Colors, Spacing, BorderRadius, Shadow } from '@/constants/theme';
+import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 import StatCard from '@/src/components/ui/StatCard';
 import LaporanCard from '@/src/components/ui/LaporanCard';
 import Loading from '@/src/components/ui/Loading';
 import EmptyState from '@/src/components/ui/EmptyState';
 
-const roleLabels: Record<string, string> = {
-  user: 'Warga',
-  admin: 'Admin',
-  super_admin: 'Super Admin',
-};
-
-export default function DashboardScreen() {
+export default function UserDashboardScreen() {
   const { user } = useAuth();
-  const role = user?.role || 'user';
-  const isUser = role === 'user';
-  const isAdmin = role === 'admin' || role === 'super_admin';
 
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentLaporan, setRecentLaporan] = useState<Laporan[]>([]);
@@ -38,23 +28,24 @@ export default function DashboardScreen() {
   const fetchData = useCallback(async () => {
     try {
       const laporanData = await apiFetch<Laporan[]>(ENDPOINTS.LAPORAN.LIST, {
-        params: isAdmin ? {} : { limit: '5' },
+        params: { limit: '5' },
       });
       const laporanList = Array.isArray(laporanData) ? laporanData : [];
+      const myLaporan = laporanList.filter((l: Laporan) => l.user_id === user?.id);
 
-      setRecentLaporan(laporanList.slice(0, 5));
+      setRecentLaporan(myLaporan.slice(0, 5));
       setStats({
-        total: laporanList.length,
-        pending: laporanList.filter((l: Laporan) => l.status === 'pending').length,
-        approved: laporanList.filter((l: Laporan) => l.status === 'approved').length,
-        rejected: laporanList.filter((l: Laporan) => l.status === 'rejected').length,
+        total: myLaporan.length,
+        pending: myLaporan.filter((l: Laporan) => l.status === 'pending').length,
+        approved: myLaporan.filter((l: Laporan) => l.status === 'approved').length,
+        rejected: myLaporan.filter((l: Laporan) => l.status === 'rejected').length,
       });
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [isAdmin]);
+  }, [user]);
 
   useFocusEffect(
     useCallback(() => {
@@ -81,7 +72,7 @@ export default function DashboardScreen() {
           Halo, {user?.nama?.split(' ')[0] || 'Pengguna'}
         </Text>
         <View style={styles.roleBadge}>
-          <Text style={styles.roleText}>{roleLabels[role] || role}</Text>
+          <Text style={styles.roleText}>Warga</Text>
         </View>
       </View>
 
@@ -95,13 +86,11 @@ export default function DashboardScreen() {
       )}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          {isUser ? 'Laporan Terbaru' : 'Semua Laporan'}
-        </Text>
+        <Text style={styles.sectionTitle}>Laporan Terbaru</Text>
       </View>
 
       {recentLaporan.length === 0 ? (
-        <EmptyState title="Belum ada laporan" message="Belum ada laporan yang dibuat" />
+        <EmptyState title="Belum ada laporan" message="Buat laporan pertama Anda" />
       ) : (
         recentLaporan.map((item) => (
           <LaporanCard key={item.id} laporan={item} />

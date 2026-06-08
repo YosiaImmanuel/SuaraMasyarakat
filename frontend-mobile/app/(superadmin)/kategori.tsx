@@ -16,11 +16,8 @@ import { ENDPOINTS } from '@/src/constants/api';
 import { Colors, Spacing, BorderRadius, Shadow } from '@/constants/theme';
 import Loading from '@/src/components/ui/Loading';
 import EmptyState from '@/src/components/ui/EmptyState';
-import { useAuth } from '@/src/lib/auth-context';
 
-export default function KategoriScreen() {
-  const { user } = useAuth();
-  const isSuperAdmin = user?.role === 'super_admin';
+export default function SuperAdminKategoriScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

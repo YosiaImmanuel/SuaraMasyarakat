@@ -10,7 +10,6 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { router } from 'expo-router';
 import { apiFetch } from '@/src/lib/api';
 import { User, Role } from '@/src/types';
 import { ENDPOINTS } from '@/src/constants/api';
@@ -24,7 +23,7 @@ const roles: { label: string; value: Role }[] = [
   { label: 'Super Admin', value: 'super_admin' },
 ];
 
-export default function UsersScreen() {
+export default function SuperAdminUsersScreen() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

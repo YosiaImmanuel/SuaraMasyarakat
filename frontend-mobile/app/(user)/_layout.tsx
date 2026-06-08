@@ -16,10 +16,8 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   const icons: Record<string, string> = {
     Beranda: '🏠',
     'Buat Laporan': '📝',
+    'Laporan Saya': '📋',
     Feed: '📰',
-    Laporan: '📋',
-    Kategori: '🏷️',
-    Users: '👥',
     Chat: '💬',
     Profil: '👤',
   };
@@ -33,18 +31,12 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   );
 }
 
-export default function TabLayout() {
+export default function UserTabLayout() {
   const { user, isLoading } = useAuth();
-  const role = user?.role || 'user';
 
   if (isLoading) {
     return <LoadingScreen />;
   }
-
-  const isUser = role === 'user';
-  const isAdmin = role === 'admin';
-  const isSuperAdmin = role === 'super_admin';
-  const canManage = isAdmin || isSuperAdmin;
 
   return (
     <Tabs
@@ -67,40 +59,21 @@ export default function TabLayout() {
         name="buat-laporan"
         options={{
           title: 'Buat Laporan',
-          href: isUser ? undefined : null,
           tabBarIcon: ({ focused }) => <TabIcon label="Buat Laporan" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="laporan-saya"
+        options={{
+          title: 'Laporan Saya',
+          tabBarIcon: ({ focused }) => <TabIcon label="Laporan Saya" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="feed"
         options={{
           title: 'Feed',
-          href: isUser ? undefined : null,
           tabBarIcon: ({ focused }) => <TabIcon label="Feed" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="laporan"
-        options={{
-          title: 'Laporan',
-          href: canManage ? undefined : null,
-          tabBarIcon: ({ focused }) => <TabIcon label="Laporan" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="kategori"
-        options={{
-          title: 'Kategori',
-          href: canManage ? undefined : null,
-          tabBarIcon: ({ focused }) => <TabIcon label="Kategori" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="users"
-        options={{
-          title: 'Users',
-          href: isSuperAdmin ? undefined : null,
-          tabBarIcon: ({ focused }) => <TabIcon label="Users" focused={focused} />,
         }}
       />
       <Tabs.Screen
