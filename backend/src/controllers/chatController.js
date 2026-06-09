@@ -133,6 +133,31 @@ exports.searchUsers = async (req, res) => {
 };
 
 /**
+ * Delete all messages between current user and another user
+ */
+exports.deleteConversation = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { userId: targetUserId } = req.params;
+
+    await pool.query(
+      `DELETE FROM messages 
+       WHERE (sender_id = ? AND receiver_id = ?) 
+          OR (sender_id = ? AND receiver_id = ?)`,
+      [userId, targetUserId, targetUserId, userId]
+    );
+
+    res.json({
+      success: true,
+      message: 'Percakapan berhasil dihapus'
+    });
+  } catch (error) {
+    console.error('Error deleting conversation:', error);
+    res.status(500).json({ success: false, message: 'Gagal menghapus percakapan' });
+  }
+};
+
+/**
  * Save message to database (called via Socket.io, but can also be called via REST)
  */
 exports.saveMessage = async (senderId, receiverId, content) => {

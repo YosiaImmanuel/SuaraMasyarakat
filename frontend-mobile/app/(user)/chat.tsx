@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, RefreshControl, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, RefreshControl, StyleSheet, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { apiFetch } from '@/src/lib/api';
 import { User, Conversation } from '@/src/types';
 import { ENDPOINTS } from '@/src/constants/api';
 import { Colors, Spacing, BorderRadius, Shadow } from '@/constants/theme';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Loading from '@/src/components/ui/Loading';
 import EmptyState from '@/src/components/ui/EmptyState';
 
@@ -70,6 +71,28 @@ export default function ChatListScreen() {
     router.push(`/chat/${userId}`);
   }
 
+  async function handleDeleteConversation(userId: number, userName: string) {
+    Alert.alert(
+      'Hapus Percakapan',
+      `Hapus percakapan dengan ${userName}?`,
+      [
+        { text: 'Batal', style: 'cancel' },
+        {
+          text: 'Hapus',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const res = await apiFetch<{ success: boolean }>(ENDPOINTS.CHAT.DELETE_CONVERSATION(userId), { method: 'DELETE' });
+              if (res.success) {
+                setConversations((prev) => prev.filter((c) => c.user_id !== userId));
+              }
+            } catch (err) { console.error(err); }
+          },
+        },
+      ]
+    );
+  }
+
   function renderConversation({ item }: { item: Conversation }) {
     return (
       <TouchableOpacity style={styles.userItem} onPress={() => startChat(item.user_id)} activeOpacity={0.7}>
@@ -77,7 +100,16 @@ export default function ChatListScreen() {
         <View style={styles.userInfo}>
           <View style={styles.conversationHeader}>
             <Text style={styles.userName} numberOfLines={1}>{item.nama}</Text>
-            <Text style={styles.timeText}>{formatTime(item.last_message_time)}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={styles.timeText}>{formatTime(item.last_message_time)}</Text>
+              <TouchableOpacity
+                onPress={() => handleDeleteConversation(item.user_id, item.nama)}
+                style={styles.deleteBtn}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <MaterialIcons name="delete-outline" size={18} color="#ef4444" />
+              </TouchableOpacity>
+            </View>
           </View>
           <View style={styles.lastMsgRow}>
             <Text style={styles.lastMsg} numberOfLines={1}>{item.last_message}</Text>
@@ -195,4 +227,5 @@ const styles = StyleSheet.create({
   userEmail: { fontSize: 12, color: Colors.light.textMuted, marginTop: 1 },
   roleBadge: { paddingHorizontal: Spacing.sm, paddingVertical: 2, borderRadius: BorderRadius.sm, marginLeft: Spacing.sm },
   roleText: { fontSize: 10, fontWeight: '600' },
+  deleteBtn: { padding: 4, borderRadius: 6, backgroundColor: '#fee2e2' },
 });

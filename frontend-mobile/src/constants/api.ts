@@ -61,6 +61,7 @@ export const ENDPOINTS = {
     SEARCH: '/chat/search',
     CONVERSATIONS: '/chat/conversations',
     HISTORY: (receiverId: number) => `/chat/history/${receiverId}`,
+    DELETE_CONVERSATION: (userId: number) => `/chat/conversation/${userId}`,
   },
   NOTIFICATIONS: {
     LIST: '/notifications',
