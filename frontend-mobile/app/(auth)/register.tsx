@@ -13,6 +13,7 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
 import { apiFetch } from '@/src/lib/api';
 import { ENDPOINTS } from '@/src/constants/api';
@@ -229,7 +230,7 @@ export default function RegisterScreen() {
                 onPress={() => setShowPassword((v) => !v)}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Text style={styles.eyeText}>{showPassword ? '🙈' : '👁️'}</Text>
+                <MaterialIcons name={showPassword ? 'visibility-off' : 'visibility'} size={20} color={WEB.textMuted} />
               </TouchableOpacity>
             </View>
             <View style={styles.checksBlock}>
@@ -339,8 +340,6 @@ const styles = StyleSheet.create({
   },
   input: { flex: 1, paddingHorizontal: 16, fontSize: 16, color: WEB.text, height: '100%' },
   eyeButton: { paddingHorizontal: 12, height: '100%', justifyContent: 'center', alignItems: 'center' },
-  eyeText: { fontSize: 17 },
-
   checksBlock: { gap: 4, marginTop: 6 },
   checkItem: { fontSize: 11, color: WEB.textSecondary, lineHeight: 17 },
   checkItemValid: { color: WEB.checkValid },

@@ -80,6 +80,7 @@ export default function FeedScreen() {
     new Date(dateStr).toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'short',
+      year: 'numeric',
     });
 
   return (

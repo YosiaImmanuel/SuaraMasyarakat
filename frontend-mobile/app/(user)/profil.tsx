@@ -13,6 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '@/src/lib/auth-context';
 import { apiFetch } from '@/src/lib/api';
 import { Laporan } from '@/src/types';
@@ -231,7 +232,8 @@ export default function ProfilScreen() {
                   </View>
                   {joinDate ? (
                     <View style={styles.dateBadge}>
-                      <Text style={styles.dateBadgeText}>📅 {joinDate}</Text>
+                      <MaterialIcons name="calendar-today" size={12} color={Colors.light.textSecondary} />
+                      <Text style={styles.dateBadgeText}> {joinDate}</Text>
                     </View>
                   ) : null}
                 </View>
@@ -247,7 +249,7 @@ export default function ProfilScreen() {
                 <View style={styles.statsRow}>
                   <View style={styles.statItem}>
                     <View style={styles.statValueRow}>
-                      <Text style={styles.statIcon}>📄</Text>
+                      <MaterialIcons name="description" size={18} color={Colors.light.textMuted} />
                       <Text style={styles.statValue}>{stats.totalLaporan}</Text>
                     </View>
                     <Text style={styles.statLabel}>Total Laporan</Text>
@@ -255,7 +257,7 @@ export default function ProfilScreen() {
                   <View style={styles.statDivider} />
                   <View style={styles.statItem}>
                     <View style={styles.statValueRow}>
-                      <Text style={styles.statIcon}>✅</Text>
+                      <MaterialIcons name="check-circle" size={18} color={Colors.light.textMuted} />
                       <Text style={styles.statValue}>{stats.selesai}</Text>
                     </View>
                     <Text style={styles.statLabel}>Selesai</Text>
@@ -287,12 +289,16 @@ export default function ProfilScreen() {
           {/* Alert Messages */}
           {(error || success) ? (
             <View style={[styles.alertBox, error ? styles.alertError : styles.alertSuccess]}>
-              <Text style={[styles.alertIcon]}>{error ? '⚠️' : '✅'}</Text>
+              <MaterialIcons
+                name={error ? 'warning' : 'check-circle'}
+                size={16}
+                color={error ? '#dc2626' : '#059669'}
+              />
               <Text style={[styles.alertText, error ? { color: '#dc2626' } : { color: '#059669' }]}>
                 {error || success}
               </Text>
               <TouchableOpacity onPress={clearMessages} activeOpacity={0.7}>
-                <Text style={styles.alertClose}>✕</Text>
+                <MaterialIcons name="close" size={16} color="#9ca3af" />
               </TouchableOpacity>
             </View>
           ) : null}
@@ -312,7 +318,8 @@ export default function ProfilScreen() {
                       onPress={() => setIsEditing(true)}
                       activeOpacity={0.7}
                     >
-                      <Text style={styles.editBtnText}>✏️ Edit</Text>
+                      <MaterialIcons name="edit" size={14} color={Colors.light.primary} />
+                      <Text style={styles.editBtnText}> Edit</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -320,15 +327,15 @@ export default function ProfilScreen() {
                 {!isEditing ? (
                   <View style={styles.infoRows}>
                     {[
-                      { icon: '👤', label: 'Nama Lengkap', value: user?.nama },
-                      { icon: '✉️', label: 'Alamat Email', value: user?.email },
-                      { icon: '🛡️', label: 'Peran', value: roleLabel },
-                      { icon: '📅', label: 'Bergabung Pada', value: joinDate },
+                      { icon: 'person', label: 'Nama Lengkap', value: user?.nama },
+                      { icon: 'email', label: 'Alamat Email', value: user?.email },
+                      { icon: 'verified-user', label: 'Peran', value: roleLabel },
+                      { icon: 'calendar-today', label: 'Bergabung Pada', value: joinDate },
                     ].map((item, i, arr) => (
                       <View key={i}>
                         <View style={styles.infoRow}>
                           <View style={styles.infoIconBox}>
-                            <Text style={styles.infoIcon}>{item.icon}</Text>
+                            <MaterialIcons name={item.icon as any} size={18} color={Colors.light.textSecondary} />
                           </View>
                           <View style={styles.infoTextWrap}>
                             <Text style={styles.infoLabel}>{item.label}</Text>
@@ -389,7 +396,10 @@ export default function ProfilScreen() {
                         {saving ? (
                           <ActivityIndicator color="#fff" size="small" />
                         ) : (
-                          <Text style={styles.saveBtnText}>💾 Simpan Perubahan</Text>
+                          <View style={styles.btnRow}>
+                            <MaterialIcons name="save" size={16} color="#fff" />
+                            <Text style={styles.saveBtnText}> Simpan Perubahan</Text>
+                          </View>
                         )}
                       </TouchableOpacity>
                     </View>
@@ -423,7 +433,7 @@ export default function ProfilScreen() {
                       onPress={() => setShowCurrent((s) => !s)}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
-                      <Text style={styles.eyeText}>{showCurrent ? '🙈' : '👁️'}</Text>
+                      <MaterialIcons name={showCurrent ? 'visibility-off' : 'visibility'} size={20} color={Colors.light.textMuted} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -444,7 +454,7 @@ export default function ProfilScreen() {
                       onPress={() => setShowNew((s) => !s)}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
-                      <Text style={styles.eyeText}>{showNew ? '🙈' : '👁️'}</Text>
+                      <MaterialIcons name={showNew ? 'visibility-off' : 'visibility'} size={20} color={Colors.light.textMuted} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -465,7 +475,7 @@ export default function ProfilScreen() {
                       onPress={() => setShowConfirm((s) => !s)}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
-                      <Text style={styles.eyeText}>{showConfirm ? '🙈' : '👁️'}</Text>
+                      <MaterialIcons name={showConfirm ? 'visibility-off' : 'visibility'} size={20} color={Colors.light.textMuted} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -481,9 +491,11 @@ export default function ProfilScreen() {
                       key={hint.label}
                       style={[styles.hintChip, hint.pass && styles.hintChipPass]}
                     >
-                      <Text style={[styles.hintIcon, hint.pass && { opacity: 1 }]}>
-                        {hint.pass ? '✅' : '○'}
-                      </Text>
+                      <MaterialIcons
+                        name={hint.pass ? 'check-circle' : 'radio-button-unchecked'}
+                        size={14}
+                        color={hint.pass ? '#059669' : Colors.light.textMuted}
+                      />
                       <Text style={[styles.hintText, hint.pass && styles.hintTextPass]}>
                         {hint.label}
                       </Text>
@@ -500,7 +512,10 @@ export default function ProfilScreen() {
                     {saving ? (
                       <ActivityIndicator color="#fff" size="small" />
                     ) : (
-                      <Text style={styles.saveBtnText}>🔒 Simpan Kata Sandi</Text>
+                      <View style={styles.btnRow}>
+                        <MaterialIcons name="lock" size={16} color="#fff" />
+                        <Text style={styles.saveBtnText}> Simpan Kata Sandi</Text>
+                      </View>
                     )}
                   </TouchableOpacity>
                 </View>
@@ -519,7 +534,7 @@ export default function ProfilScreen() {
                 <View style={styles.deleteCard}>
                   <View style={styles.deleteCardInner}>
                     <View style={styles.deleteIconBox}>
-                      <Text style={styles.deleteIcon}>🗑️</Text>
+                      <MaterialIcons name="delete-outline" size={22} color="#dc2626" />
                     </View>
                     <View style={styles.deleteTextWrap}>
                       <Text style={styles.deleteTitle}>Hapus Akun Secara Permanen</Text>
@@ -542,7 +557,8 @@ export default function ProfilScreen() {
                       {deleteStep === 1 && (
                         <View style={styles.deleteStep1}>
                           <View style={styles.deleteWarning}>
-                            <Text style={styles.deleteWarningText}>⚠️ Apakah Anda yakin? Tindakan ini tidak dapat dibatalkan.</Text>
+                            <MaterialIcons name="warning" size={16} color="#92400e" />
+                            <Text style={styles.deleteWarningText}> Apakah Anda yakin? Tindakan ini tidak dapat dibatalkan.</Text>
                           </View>
                           <View style={styles.deleteActions}>
                             <TouchableOpacity
@@ -579,7 +595,7 @@ export default function ProfilScreen() {
                                 onPress={() => setShowDeletePw((s) => !s)}
                                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                               >
-                                <Text style={styles.eyeText}>{showDeletePw ? '🙈' : '👁️'}</Text>
+                                <MaterialIcons name={showDeletePw ? 'visibility-off' : 'visibility'} size={20} color={Colors.light.textMuted} />
                               </TouchableOpacity>
                             </View>
                           </View>
@@ -599,7 +615,10 @@ export default function ProfilScreen() {
                               {isDeleting ? (
                                 <ActivityIndicator color="#fff" size="small" />
                               ) : (
-                                <Text style={styles.deleteExecBtnText}>🗑️ Hapus Akun</Text>
+                                <View style={styles.btnRow}>
+                                  <MaterialIcons name="delete" size={16} color="#fff" />
+                                  <Text style={styles.deleteExecBtnText}> Hapus Akun</Text>
+                                </View>
                               )}
                             </TouchableOpacity>
                           </View>
@@ -615,7 +634,8 @@ export default function ProfilScreen() {
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutBtn} onPress={logout} activeOpacity={0.7}>
-          <Text style={styles.logoutBtnText}>🚪 Keluar</Text>
+          <MaterialIcons name="exit-to-app" size={18} color={Colors.light.text} />
+          <Text style={styles.logoutBtnText}> Keluar</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -727,6 +747,8 @@ const styles = StyleSheet.create({
     color: Colors.light.primary,
   },
   dateBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#f9fafb',
     borderWidth: 1,
     borderColor: '#e5e7eb',
@@ -767,7 +789,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  statIcon: { fontSize: 14 },
   statValue: {
     fontSize: 22,
     fontWeight: '700',
@@ -838,9 +859,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#bbf7d0',
   },
-  alertIcon: { fontSize: 16 },
   alertText: { flex: 1, fontSize: 13, fontWeight: '500' },
-  alertClose: { fontSize: 16, color: '#9ca3af', paddingLeft: 4 },
 
   tabContent: { padding: Spacing.lg },
 
@@ -862,6 +881,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   editBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     backgroundColor: '#eff6ff',
@@ -891,7 +912,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  infoIcon: { fontSize: 16 },
   infoTextWrap: { flex: 1 },
   infoLabel: {
     fontSize: 11,
@@ -948,6 +968,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
   },
+  btnRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 
   // Inline Input Fields (login-like)
   fieldGroup: { gap: 6 },
@@ -984,7 +1008,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  eyeText: { fontSize: 17 },
 
   // Password fields
   hintsRow: {
@@ -1008,7 +1031,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0fdf4',
     borderColor: '#bbf7d0',
   },
-  hintIcon: { fontSize: 12, opacity: 0.4 },
   hintText: {
     fontSize: 11,
     fontWeight: '500',
@@ -1039,7 +1061,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  deleteIcon: { fontSize: 20 },
   deleteTextWrap: { flex: 1 },
   deleteTitle: {
     fontSize: 14,
@@ -1068,6 +1089,8 @@ const styles = StyleSheet.create({
   },
   deleteStep1: { gap: Spacing.md },
   deleteWarning: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     backgroundColor: '#fffbeb',
     borderWidth: 1,
     borderColor: '#fde68a',
@@ -1075,6 +1098,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
   },
   deleteWarningText: {
+    flex: 1,
     fontSize: 12,
     fontWeight: '600',
     color: '#92400e',
@@ -1125,12 +1149,14 @@ const styles = StyleSheet.create({
 
   // Logout
   logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: Colors.light.surface,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
     borderColor: Colors.light.border,
     paddingVertical: 16,
-    alignItems: 'center',
     marginTop: Spacing.lg,
     marginHorizontal: Spacing.lg,
   },
@@ -1140,5 +1166,3 @@ const styles = StyleSheet.create({
     color: Colors.light.text,
   },
 });
-
-
