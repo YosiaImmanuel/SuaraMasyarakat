@@ -29,6 +29,7 @@ export interface Laporan {
   updated_at: string;
   nama_pelapor?: string;
   kategori?: string;
+  rejection_reason?: string;
 }
 
 export interface Category {

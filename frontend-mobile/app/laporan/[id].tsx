@@ -72,10 +72,10 @@ export default function LaporanDetailScreen() {
         method: 'PATCH',
         body: JSON.stringify(body),
       });
-      setLaporan((prev) => prev ? { ...prev, status: status as Laporan['status'] } : null);
       setRejectModalVisible(false);
       setRejectionReason('');
       Alert.alert('Berhasil', `Status laporan diubah menjadi ${status}`);
+      fetchDetail();
     } catch (err: any) {
       Alert.alert('Gagal', err.message);
     } finally {
@@ -197,6 +197,13 @@ export default function LaporanDetailScreen() {
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>🔄 Diperbarui</Text>
               <Text style={styles.infoValue}>{formatDate(laporan.updated_at)}</Text>
+            </View>
+          )}
+
+          {laporan.status === 'rejected' && laporan.rejection_reason && (
+            <View style={styles.rejectionCard}>
+              <Text style={styles.rejectionTitle}>✕ Alasan Penolakan</Text>
+              <Text style={styles.rejectionText}>{laporan.rejection_reason}</Text>
             </View>
           )}
 
@@ -388,6 +395,27 @@ const styles = StyleSheet.create({
   },
   infoLabel: { fontSize: 14, color: Colors.light.textMuted, fontWeight: '500' },
   infoValue: { fontSize: 14, color: Colors.light.text, flex: 1 },
+  rejectionCard: {
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginTop: Spacing.md,
+  },
+  rejectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#dc2626',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  rejectionText: {
+    fontSize: 14,
+    color: '#b91c1c',
+    lineHeight: 20,
+  },
   adminActions: {
     flexDirection: 'row',
     gap: Spacing.md,
