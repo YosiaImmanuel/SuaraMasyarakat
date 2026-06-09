@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: Spacing.md,
     padding: Spacing.lg,
-    marginTop: -24,
+    marginTop: Spacing.md,
   },
   section: {
     paddingHorizontal: Spacing.lg,
