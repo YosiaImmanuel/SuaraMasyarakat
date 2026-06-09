@@ -7,5 +7,7 @@ router.get('/', verifyToken, notificationController.getNotifications);
 router.get('/unread-count', verifyToken, notificationController.getUnreadCount);
 router.patch('/read', verifyToken, notificationController.markAllAsRead);
 router.patch('/:id/read', verifyToken, notificationController.markAsRead);
+router.delete('/', verifyToken, notificationController.deleteAllNotifications);
+router.delete('/:id', verifyToken, notificationController.deleteNotification);
 
 module.exports = router;

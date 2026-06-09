@@ -120,10 +120,52 @@ const markAsRead = async (req, res) => {
   }
 };
 
+/**
+ * Delete a single notification (with ownership verification)
+ */
+const deleteNotification = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const notifId = req.params.id;
+
+    const [existing] = await db.query(
+      `SELECT id FROM notifications WHERE id = ? AND user_id = ?`,
+      [notifId, userId]
+    );
+
+    if (existing.length === 0) {
+      return res.status(404).json({ message: 'Notifikasi tidak ditemukan.' });
+    }
+
+    await db.query(`DELETE FROM notifications WHERE id = ?`, [notifId]);
+
+    res.json({ message: 'Notifikasi berhasil dihapus.' });
+  } catch (error) {
+    console.error('❌ Error deleting notification:', error);
+    res.status(500).json({ message: 'Server error.', error: error.message });
+  }
+};
+
+/**
+ * Delete all notifications for current user
+ */
+const deleteAllNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await db.query(`DELETE FROM notifications WHERE user_id = ?`, [userId]);
+    res.json({ message: 'Semua notifikasi berhasil dihapus.' });
+  } catch (error) {
+    console.error('❌ Error deleting all notifications:', error);
+    res.status(500).json({ message: 'Server error.', error: error.message });
+  }
+};
+
 module.exports = {
   createNotification,
   getNotifications,
   getUnreadCount,
   markAllAsRead,
   markAsRead,
+  deleteNotification,
+  deleteAllNotifications,
 };
