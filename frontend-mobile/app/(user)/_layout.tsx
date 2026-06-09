@@ -18,6 +18,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
     'Buat Laporan': '📝',
     'Laporan Saya': '📋',
     Feed: '📰',
+    Notifikasi: '🔔',
     Chat: '💬',
     Profil: '👤',
   };
@@ -74,6 +75,13 @@ export default function UserTabLayout() {
         options={{
           title: 'Feed',
           tabBarIcon: ({ focused }) => <TabIcon label="Feed" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="notifikasi"
+        options={{
+          title: 'Notifikasi',
+          tabBarIcon: ({ focused }) => <TabIcon label="Notifikasi" focused={focused} />,
         }}
       />
       <Tabs.Screen

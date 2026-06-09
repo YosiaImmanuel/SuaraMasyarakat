@@ -223,8 +223,8 @@ export default function UserDashboardScreen() {
       <View style={s.feedSection}>
         <View style={s.feedHeader}>
           <View style={s.feedHeaderLeft}>
-            <Text style={s.feedTitle}>Laporan Warga Lain</Text>
-            <Text style={s.feedSubtitle}>Laporan yang sedang diproses atau telah disetujui</Text>
+            <Text style={s.feedTitle}>Semua Laporan Warga</Text>
+            <Text style={s.feedSubtitle}>Laporan yang dikirim oleh warga</Text>
           </View>
           <TouchableOpacity onPress={() => router.push('/(user)/feed')} activeOpacity={0.7}>
             <Text style={s.lihatSemua}>Lihat semua →</Text>
