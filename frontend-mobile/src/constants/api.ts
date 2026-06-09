@@ -10,7 +10,7 @@ import { Platform } from 'react-native';
  * Pastikan handphone dan komputer terhubung ke jaringan WiFi yang SAMA.
  * Port 3000 harus sesuai dengan PORT di backend/.env
  */
-const COMPUTER_IP = '192.168.0.14';
+const COMPUTER_IP = '10.2.15.217';
 const PORT = '3000';
 
 const getBaseUrl = () => {
