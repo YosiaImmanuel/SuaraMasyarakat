@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
@@ -8,7 +9,6 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { useAuth } from '@/src/lib/auth-context';
 import { apiFetch } from '@/src/lib/api';
 import { Laporan, DashboardStats } from '@/src/types';
 import { ENDPOINTS } from '@/src/constants/api';
@@ -69,7 +69,13 @@ export default function AdminDashboardScreen() {
             <Text style={styles.headerTitle}>Dashboard</Text>
             <Text style={styles.headerSubtitle}>Overview laporan warga</Text>
           </View>
-          <View style={styles.roleBadge}><Text style={styles.roleText}>Admin</Text></View>
+          <TouchableOpacity
+            style={styles.lihatBtn}
+            onPress={() => router.push('/(admin)/laporan')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.lihatBtnText}>Lihat Laporan</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -130,17 +136,16 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     marginTop: 4,
   },
-  roleBadge: {
-    alignSelf: 'flex-start',
+  lihatBtn: {
     backgroundColor: 'rgba(255,255,255,0.2)',
     paddingHorizontal: Spacing.md,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
   },
-  roleText: {
-    fontSize: 12,
-    fontWeight: '600',
+  lihatBtnText: {
     color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
   },
   statsGrid: {
     flexDirection: 'row',

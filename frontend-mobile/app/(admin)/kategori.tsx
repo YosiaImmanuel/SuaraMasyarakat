@@ -114,13 +114,10 @@ export default function AdminKategoriScreen() {
             <Text style={styles.headerTitle}>Kategori</Text>
             <Text style={styles.headerSubtitle}>Kelola kategori laporan</Text>
           </View>
+          <TouchableOpacity style={styles.addButton} onPress={openCreate}>
+            <Text style={styles.addButtonText}>+ Tambah</Text>
+          </TouchableOpacity>
         </View>
-      </View>
-
-      <View style={styles.headerActions}>
-        <TouchableOpacity style={styles.addButton} onPress={openCreate}>
-          <Text style={styles.addButtonText}>+ Tambah</Text>
-        </TouchableOpacity>
       </View>
 
       {showForm && (
@@ -222,22 +219,16 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     marginTop: 4,
   },
-  headerActions: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
   addButton: {
-    backgroundColor: Colors.light.primary,
-    paddingHorizontal: Spacing.lg,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.md,
   },
   addButtonText: {
     color: '#fff',
+    fontSize: 13,
     fontWeight: '600',
-    fontSize: 14,
   },
   formCard: {
     backgroundColor: Colors.light.surface,
