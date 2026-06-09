@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,8 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import LocationPickerModal from '@/src/components/LocationPickerModal';
 import { apiUpload, apiFetch } from '@/src/lib/api';
 import { Category } from '@/src/types';
 import { ENDPOINTS } from '@/src/constants/api';
@@ -23,6 +25,8 @@ export default function BuatLaporanScreen() {
   const [judul, setJudul] = useState('');
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [lokasi, setLokasi] = useState('');
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [selectedCoords, setSelectedCoords] = useState<{lat: number; lng: number} | null>(null);
   const [deskripsi, setDeskripsi] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -166,14 +170,34 @@ export default function BuatLaporanScreen() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Lokasi</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Contoh: Jl. Merdeka No. 10, Jakarta"
-              placeholderTextColor={Colors.light.textMuted}
-              value={lokasi}
-              onChangeText={setLokasi}
-              editable={!submitting}
-            />
+            {lokasi ? (
+              <View style={styles.locationCard}>
+                <View style={styles.locationCardIcon}>
+                  <Text style={styles.locationCardIconText}>📍</Text>
+                </View>
+                <View style={styles.locationCardInfo}>
+                  <Text style={styles.locationCardAddress} numberOfLines={2}>{lokasi}</Text>
+                  <Text style={styles.locationCardCoord}>
+                    {selectedCoords?.lat.toFixed(5)}, {selectedCoords?.lng.toFixed(5)}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.locationCardBtn}
+                  onPress={() => setShowMapModal(true)}
+                  disabled={submitting}
+                >
+                  <Text style={styles.locationCardBtnText}>Ubah</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.locationPickerBtn}
+                onPress={() => setShowMapModal(true)}
+                disabled={submitting}
+              >
+                <Text style={styles.locationPickerBtnText}>📍 Pilih Lokasi di Peta...</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={styles.inputGroup}>
@@ -206,7 +230,7 @@ export default function BuatLaporanScreen() {
                       onPress={() => removeImage(index)}
                       disabled={submitting}
                     >
-                      <Text style={styles.removeImageText}>×</Text>
+                      <MaterialIcons name="close" size={14} color="#fff" />
                     </TouchableOpacity>
                   </View>
                 ))}
@@ -226,6 +250,15 @@ export default function BuatLaporanScreen() {
             )}
           </TouchableOpacity>
         </View>
+        <LocationPickerModal
+          visible={showMapModal}
+          onClose={() => setShowMapModal(false)}
+          onSelect={(lat, lng, address) => {
+            setLokasi(address);
+            setSelectedCoords({ lat, lng });
+            setShowMapModal(false);
+          }}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -315,6 +348,64 @@ const styles = StyleSheet.create({
   categoryChipTextActive: {
     color: '#fff',
   },
+  locationPickerBtn: {
+    borderWidth: 2,
+    borderColor: Colors.light.border,
+    borderStyle: 'dashed',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.xl,
+    alignItems: 'center',
+    backgroundColor: Colors.light.surface,
+  },
+  locationPickerBtnText: {
+    fontSize: 16,
+    color: Colors.light.primary,
+    fontWeight: '600',
+  },
+  locationCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.light.primary + '10',
+    borderWidth: 1,
+    borderColor: Colors.light.primary + '30',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    gap: Spacing.md,
+  },
+  locationCardIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.light.primary + '15',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  locationCardIconText: { fontSize: 16 },
+  locationCardInfo: {
+    flex: 1,
+  },
+  locationCardAddress: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.light.text,
+  },
+  locationCardCoord: {
+    fontSize: 11,
+    color: Colors.light.textMuted,
+    marginTop: 2,
+  },
+  locationCardBtn: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.light.primary + '30',
+  },
+  locationCardBtnText: {
+    fontSize: 12,
+    color: Colors.light.primary,
+    fontWeight: '600',
+  },
   imagePicker: {
     borderWidth: 2,
     borderColor: Colors.light.border,
@@ -354,12 +445,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  removeImageText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-    lineHeight: 18,
-  },
   submitButton: {
     backgroundColor: Colors.light.primary,
     borderRadius: BorderRadius.md,
@@ -376,3 +461,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
