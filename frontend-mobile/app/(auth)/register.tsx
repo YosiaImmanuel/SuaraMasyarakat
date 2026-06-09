@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Animated,
   Dimensions,
+  Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import { apiFetch } from '@/src/lib/api';
@@ -145,10 +146,12 @@ export default function RegisterScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* ── Logo ── */}
-        <View style={styles.logoRow}>
-          <View style={styles.logoIcon}>
-            <Text style={styles.logoIconText}>SM</Text>
-          </View>
+                <View style={styles.logoRow}>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
           <Text style={styles.logoText}>SuaraMasyarakat</Text>
         </View>
 
@@ -277,13 +280,11 @@ const styles = StyleSheet.create({
     paddingTop: 64,
     paddingBottom: 40,
   },
-
+  logoImage: {
+  width: 36,
+  height: 36,
+},
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 28 },
-  logoIcon: {
-    width: 36, height: 36, borderRadius: 8,
-    backgroundColor: WEB.primary, alignItems: 'center', justifyContent: 'center',
-  },
-  logoIconText: { color: '#fff', fontWeight: '800', fontSize: 13, letterSpacing: 0.5 },
   logoText: {
     fontSize: 20, fontWeight: '600', color: WEB.primary, letterSpacing: -0.3,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
